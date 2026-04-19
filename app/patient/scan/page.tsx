@@ -145,6 +145,13 @@ export default function ScanPage() {
     };
     animRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(animRef.current);
+  }, [phase, plRef.current]);
+
+  // Initialize camera and MediaPipe when entering scanning phase
+  useEffect(() => {
+    if (phase !== "scanning") return;
+    initCamera();
+    initMediaPipe();
   }, [phase]);
 
   // Capture timer countdown effect
@@ -174,8 +181,6 @@ export default function ScanPage() {
   function selectMovementAndStartCamera(exerciseId: string) {
     setSelectedExercise(exerciseId);
     setPhase("scanning");
-    setStatus("Loading camera and pose detection...");
-    initCamera();
   }
 
   function startCaptureTimer(seconds: 5 | 10) {
@@ -317,18 +322,6 @@ export default function ScanPage() {
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-            {/* Capture Timer Overlay */}
-            {captureTimer !== null && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center"
-                style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)" }}>
-                <p className="text-sm font-semibold mb-4" style={{ color: "#fff" }}>Capturing in</p>
-                <div style={{ fontSize: "7rem", fontWeight: "bold", lineHeight: "1", color: "#fff", marginBottom: "20px" }}>
-                  {captureTimer}
-                </div>
-                <p className="text-sm" style={{ color: "#fff" }}>Hold pose still and stay in frame</p>
-              </div>
-            )}
-
             <div className="absolute bottom-3 left-3 right-3">
               <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.95)" }}>
                 <div className="flex justify-between mb-1.5 text-xs">
@@ -341,6 +334,17 @@ export default function ScanPage() {
               </div>
             </div>
           </div>
+
+          {/* Capture Timer Below Video */}
+          {captureTimer !== null && (
+            <div className="rounded-2xl p-8 text-center" style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)" }}>
+              <p className="text-sm font-semibold mb-4" style={{ color: "#fff" }}>Capturing in</p>
+              <div style={{ fontSize: "5rem", fontWeight: "bold", lineHeight: "1", color: "#fff", marginBottom: "20px" }}>
+                {captureTimer}
+              </div>
+              <p className="text-sm" style={{ color: "#fff" }}>Hold pose still and stay in frame</p>
+            </div>
+          )}
 
           <p className="text-sm text-center" style={{ color: "var(--color-hw-muted)" }}>
             {confidence < 0.65 && status === "Step back so your full body is visible" ? "📸 Step back — full body must be visible" : status}

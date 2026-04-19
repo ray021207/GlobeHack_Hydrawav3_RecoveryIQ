@@ -107,11 +107,11 @@ function Step1({
       const exists = prev.areas.find((a) => a.regionId === id);
       if (exists) {
         const next = prev.areas.filter((a) => a.regionId !== id);
-        setActiveRegion(next[0]?.regionId ?? null);
+        setTimeout(() => setActiveRegion(next[0]?.regionId ?? null), 0);
         return { ...prev, areas: next };
       }
       const newEntry: AreaEntry = { regionId: id, discomfort: 5, behavior: "", duration: "", notes: "", isPrimary: prev.areas.length === 0 };
-      setActiveRegion(id);
+      setTimeout(() => setActiveRegion(id), 0);
       return { ...prev, areas: [...prev.areas, newEntry] };
     });
   }

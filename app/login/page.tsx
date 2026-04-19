@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { seedStorage } from "@/lib/mock-data";
+import { seedStorage, clearAllUserData } from "@/lib/mock-data";
 
 const CREDENTIALS: Record<string, { password: string; role: "practitioner" | "patient"; userId: string }> = {
   practitioner: { password: "hydra2026",  role: "practitioner", userId: "practitioner" },
@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
 
   useEffect(() => { seedStorage(); }, []);
 
@@ -33,6 +34,15 @@ export default function LoginPage() {
     localStorage.setItem("riq_role", cred.role);
     localStorage.setItem("riq_userId", cred.userId);
     router.push(cred.role === "practitioner" ? "/practitioner" : "/patient");
+  }
+
+  function handleResetData() {
+    clearAllUserData();
+    setShowReset(false);
+    setError("");
+    setUsername("");
+    setPassword("");
+    alert("✓ All user data has been cleared. Start fresh!");
   }
 
   return (
@@ -83,6 +93,23 @@ export default function LoginPage() {
             style={{ background: "var(--color-hw-gold)", color: "#fff" }}>
             {loading ? "Signing in..." : "Sign In"}
           </button>
+
+          <button type="button" onClick={() => setShowReset(!showReset)}
+            className="w-full py-2.5 rounded-xl font-semibold text-xs mt-3 transition-opacity"
+            style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+            {showReset ? "✕ Cancel" : "Reset Data"}
+          </button>
+
+          {showReset && (
+            <div className="p-4 rounded-xl border mt-3" style={{ background: "rgba(220,38,38,0.1)", borderColor: "rgba(220,38,38,0.3)", color: "rgba(255,255,255,0.8)" }}>
+              <p className="text-xs font-semibold mb-3">Clear all user data and start fresh?</p>
+              <button type="button" onClick={handleResetData}
+                className="w-full py-2 rounded-lg font-semibold text-xs"
+                style={{ background: "rgba(220,38,38,0.5)", color: "#fff" }}>
+                Confirm Reset
+              </button>
+            </div>
+          )}
         </form>
 
         <div className="mt-8 p-4 rounded-xl text-xs space-y-1" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>

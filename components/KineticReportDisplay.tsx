@@ -72,8 +72,8 @@ export function KineticReportDisplay({
         style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)" }}
       >
         <div className="relative z-10 pr-16">
-          <p className="text-sm font-semibold uppercase tracking-wider opacity-90">Kinetic Analysis Report</p>
-          <h2 className="text-3xl font-bold mb-2 leading-tight break-words">{patientName}'s Recovery Profile</h2>
+          <p className="text-xs font-semibold uppercase tracking-wider opacity-90">Kinetic Analysis Report</p>
+          <h2 className="text-xl font-bold mb-2 leading-tight break-words">{patientName}'s Recovery Profile</h2>
           <p className="text-sm opacity-90">
             {new Date(report.submittedAt).toLocaleDateString("en-US", {
               weekday: "long",
@@ -135,10 +135,10 @@ export function KineticReportDisplay({
       )}
 
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {/* Recovery Score - Large */}
         <div
-          className="md:col-span-2 rounded-2xl p-6 flex flex-col justify-center"
+          className="md:col-span-2 rounded-2xl p-4 flex flex-col justify-center"
           style={{ background: "var(--color-hw-cream)", border: "1px solid var(--color-hw-border)" }}
         >
           <div className="flex items-end gap-4">
@@ -147,7 +147,7 @@ export function KineticReportDisplay({
                 Recovery Score
               </p>
               <div className="flex items-baseline gap-2">
-                <p className="text-5xl font-black" style={{ color: "var(--color-hw-clay)" }}>
+                <p className="text-3xl font-black" style={{ color: "var(--color-hw-clay)" }}>
                   {report.recoveryScore}
                 </p>
                 <p style={{ color: "var(--color-hw-text-muted)" }}>/100</p>
@@ -168,27 +168,27 @@ export function KineticReportDisplay({
         </div>
 
         {/* Severity Card */}
-        <div className="rounded-2xl p-4" style={{ background: severityGradient.bg, border: `1px solid ${severityGradient.border}` }}>
+        <div className="rounded-2xl p-3" style={{ background: severityGradient.bg, border: `1px solid ${severityGradient.border}` }}>
           <div className="flex items-center gap-2 mb-2">
-            <AlertCircle size={16} style={{ color: severityGradient.text }} />
+            <AlertCircle size={14} style={{ color: severityGradient.text }} />
             <p className="text-xs font-semibold uppercase" style={{ color: severityGradient.text }}>
               Severity
             </p>
           </div>
-          <p className="text-2xl font-bold" style={{ color: severityGradient.text }}>
+          <p className="text-lg font-bold break-words" style={{ color: severityGradient.text, wordBreak: "break-word", overflow: "hidden" }}>
             {report.summary.severityLevel}
           </p>
         </div>
 
         {/* Areas Affected */}
-        <div className="rounded-2xl p-4" style={{ background: "var(--color-hw-cream)", border: "1px solid var(--color-hw-border)" }}>
+        <div className="rounded-2xl p-3" style={{ background: "var(--color-hw-cream)", border: "1px solid var(--color-hw-border)" }}>
           <div className="flex items-center gap-2 mb-2">
-            <Target size={16} style={{ color: "var(--color-hw-clay)" }} />
+            <Target size={14} style={{ color: "var(--color-hw-clay)" }} />
             <p className="text-xs font-semibold uppercase" style={{ color: "var(--color-hw-text-muted)" }}>
               Areas Affected
             </p>
           </div>
-          <p className="text-3xl font-bold" style={{ color: "var(--color-hw-text)" }}>
+          <p className="text-xl font-bold" style={{ color: "var(--color-hw-text)" }}>
             {report.summary.totalAreasAffected}
           </p>
         </div>

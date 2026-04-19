@@ -102,60 +102,24 @@ export const PATIENTS: Record<PatientId, Patient> = {
 };
 
 const MOCK_CHECKINS: Record<PatientId, Checkin[]> = {
-  maria: [
-    { id: "c1", timestamp: "2026-04-04T09:00:00Z", pain: 7, function_rating: "partial", lifestyle: { meds: true, exercises: false, sleep: false, ate_well: true }, note: "Shoulder stiff in morning", lifestyle_score: 0.5 },
-    { id: "c2", timestamp: "2026-04-07T09:00:00Z", pain: 6, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: false, ate_well: true }, note: "", lifestyle_score: 0.75 },
-    { id: "c3", timestamp: "2026-04-10T09:00:00Z", pain: 5, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Feeling better after exercises", lifestyle_score: 1.0 },
-    { id: "c4", timestamp: "2026-04-14T09:00:00Z", pain: 4, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 0.75 },
-    { id: "c5", timestamp: "2026-04-17T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Much improved!", lifestyle_score: 1.0 },
-  ],
-  james: [
-    { id: "c1", timestamp: "2026-04-05T09:00:00Z", pain: 8, function_rating: "no", lifestyle: { meds: true, exercises: false, sleep: false, ate_well: false }, note: "Bad flare-up", lifestyle_score: 0.25 },
-    { id: "c2", timestamp: "2026-04-08T09:00:00Z", pain: 7, function_rating: "no", lifestyle: { meds: true, exercises: false, sleep: true, ate_well: false }, note: "", lifestyle_score: 0.5 },
-    { id: "c3", timestamp: "2026-04-11T09:00:00Z", pain: 7, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Tried the exercises", lifestyle_score: 1.0 },
-    { id: "c4", timestamp: "2026-04-15T09:00:00Z", pain: 6, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: false, ate_well: true }, note: "", lifestyle_score: 0.75 },
-    { id: "c5", timestamp: "2026-04-18T09:00:00Z", pain: 6, function_rating: "partial", lifestyle: { meds: true, exercises: false, sleep: true, ate_well: false }, note: "Stable", lifestyle_score: 0.5 },
-  ],
-  sarah: [
-    { id: "c1", timestamp: "2026-04-06T09:00:00Z", pain: 5, function_rating: "partial", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Knee swollen after run", lifestyle_score: 0.75 },
-    { id: "c2", timestamp: "2026-04-09T09:00:00Z", pain: 4, function_rating: "partial", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 1.0 },
-    { id: "c3", timestamp: "2026-04-12T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Great progress", lifestyle_score: 1.0 },
-    { id: "c4", timestamp: "2026-04-16T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 1.0 },
-    { id: "c5", timestamp: "2026-04-18T09:00:00Z", pain: 2, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Feeling strong!", lifestyle_score: 1.0 },
-  ],
-  alex: [
-    { id: "c1", timestamp: "2026-04-07T09:00:00Z", pain: 6, function_rating: "partial", lifestyle: { meds: true, exercises: false, sleep: false, ate_well: false }, note: "Neck tension from desk work", lifestyle_score: 0.25 },
-    { id: "c2", timestamp: "2026-04-10T09:00:00Z", pain: 5, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Trying stretches", lifestyle_score: 0.75 },
-    { id: "c3", timestamp: "2026-04-13T09:00:00Z", pain: 4, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Noticing improvement", lifestyle_score: 1.0 },
-    { id: "c4", timestamp: "2026-04-16T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 1.0 },
-    { id: "c5", timestamp: "2026-04-19T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Feeling much better!", lifestyle_score: 1.0 },
-  ],
+  maria: [],
+  james: [],
+  sarah: [],
+  alex: [],
 };
 
 const MOCK_SCANS: Record<PatientId, CvScan[]> = {
-  maria: [
-    { id: "s1", type: "pre_session", timestamp: "2026-04-10T10:00:00Z", rom: { shoulder_l: 130, shoulder_r: 108, hip_l: 112, hip_r: 110, knee_l: 135, knee_r: 133 }, symmetry_score: 17, compensation_index: 62, baseline_tier: 2, confidence: 0.82 },
-    { id: "s2", type: "post_session", timestamp: "2026-04-10T11:30:00Z", rom: { shoulder_l: 148, shoulder_r: 126, hip_l: 115, hip_r: 113, knee_l: 138, knee_r: 136 }, symmetry_score: 15, compensation_index: 38, baseline_tier: 2, confidence: 0.85 },
-  ],
-  james: [
-    { id: "s1", type: "pre_session", timestamp: "2026-04-11T10:00:00Z", rom: { shoulder_l: 155, shoulder_r: 158, hip_l: 90, hip_r: 88, knee_l: 140, knee_r: 138 }, symmetry_score: 22, compensation_index: 71, baseline_tier: 1, confidence: 0.79 },
-    { id: "s2", type: "post_session", timestamp: "2026-04-11T11:30:00Z", rom: { shoulder_l: 158, shoulder_r: 160, hip_l: 105, hip_r: 102, knee_l: 142, knee_r: 140 }, symmetry_score: 18, compensation_index: 58, baseline_tier: 1, confidence: 0.81 },
-  ],
-  sarah: [
-    { id: "s1", type: "pre_session", timestamp: "2026-04-12T10:00:00Z", rom: { shoulder_l: 162, shoulder_r: 160, hip_l: 118, hip_r: 115, knee_l: 120, knee_r: 138 }, symmetry_score: 14, compensation_index: 42, baseline_tier: 2, confidence: 0.88 },
-    { id: "s2", type: "post_session", timestamp: "2026-04-12T11:30:00Z", rom: { shoulder_l: 164, shoulder_r: 162, hip_l: 122, hip_r: 120, knee_l: 132, knee_r: 140 }, symmetry_score: 6, compensation_index: 28, baseline_tier: 2, confidence: 0.91 },
-  ],
-  alex: [
-    { id: "s1", type: "pre_session", timestamp: "2026-04-13T10:00:00Z", rom: { shoulder_l: 145, shoulder_r: 138, hip_l: 105, hip_r: 108, knee_l: 132, knee_r: 135 }, symmetry_score: 19, compensation_index: 68, baseline_tier: 2, confidence: 0.84 },
-    { id: "s2", type: "post_session", timestamp: "2026-04-13T11:30:00Z", rom: { shoulder_l: 155, shoulder_r: 152, hip_l: 110, hip_r: 112, knee_l: 135, knee_r: 138 }, symmetry_score: 12, compensation_index: 45, baseline_tier: 2, confidence: 0.87 },
-  ],
+  maria: [],
+  james: [],
+  sarah: [],
+  alex: [],
 };
 
 const MOCK_GAM: Record<PatientId, Gamification> = {
-  maria: { points: 420, gems: 420, streak: 5, lastCheckin: "2026-04-17T09:00:00Z", badges: ["first_checkin", "movement_pioneer"], avatar: { animal: "fox", accessory: null, name: "Swift Fox" } },
-  james: { points: 280, gems: 280, streak: 3, lastCheckin: "2026-04-18T09:00:00Z", badges: ["first_checkin"], avatar: { animal: "fox", accessory: null, name: "Iron Bear" } },
-  sarah: { points: 560, gems: 560, streak: 7, lastCheckin: "2026-04-18T09:00:00Z", badges: ["first_checkin", "movement_pioneer", "week_warrior", "symmetry_star"], avatar: { animal: "fox", accessory: null, name: "Swift Eagle" } },
-  alex: { points: 340, gems: 340, streak: 4, lastCheckin: "2026-04-19T09:00:00Z", badges: ["first_checkin", "movement_pioneer"], avatar: { animal: "bear", accessory: null, name: "Steady Bear" } },
+  maria: { points: 0, gems: 0, streak: 0, lastCheckin: null, badges: [], avatar: { animal: "fox", accessory: null, name: "Swift Fox" } },
+  james: { points: 0, gems: 0, streak: 0, lastCheckin: null, badges: [], avatar: { animal: "bear", accessory: null, name: "Iron Bear" } },
+  sarah: { points: 0, gems: 0, streak: 0, lastCheckin: null, badges: [], avatar: { animal: "eagle", accessory: null, name: "Swift Eagle" } },
+  alex: { points: 0, gems: 0, streak: 0, lastCheckin: null, badges: [], avatar: { animal: "bear", accessory: null, name: "Steady Bear" } },
 };
 
 // ── localStorage helpers ──────────────────────────────────────────────────────
@@ -262,4 +226,223 @@ export function getTrend(patientId: string): "improving" | "stable" | "declining
 
 export function daysSince(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
+// ── Recovery Plan Tracking ──────────────────────────────────────────────────
+
+export type RecoveryPlanCompletion = {
+  week: number;
+  day: number; // 1-7
+  exercisesCompleted: string[]; // exercise names
+  dietFollowed: boolean;
+  lifestyleScore: number; // 0-100
+  notes: string;
+  createdAt?: string; // ISO timestamp
+};
+
+export type RecoveryPlanProgress = {
+  planId: string;
+  createdAt: string;
+  completions: RecoveryPlanCompletion[];
+  totalPointsEarned: number;
+  streakDays: number;
+  accessoriesUnlocked: string[];
+};
+
+export function getRecoveryPlan(patientId: string): any {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem(`recovery_plan_${patientId}`) ?? "null");
+  } catch {
+    return null;
+  }
+}
+
+export function saveRecoveryPlan(patientId: string, plan: any) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(`recovery_plan_${patientId}`, JSON.stringify(plan));
+}
+
+export function getRecoveryPlanProgress(patientId: string): RecoveryPlanProgress | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return JSON.parse(localStorage.getItem(`recovery_plan_progress_${patientId}`) ?? "null");
+  } catch {
+    return null;
+  }
+}
+
+export function initRecoveryPlanProgress(patientId: string, planId: string): RecoveryPlanProgress {
+  const progress: RecoveryPlanProgress = {
+    planId,
+    createdAt: new Date().toISOString(),
+    completions: [],
+    totalPointsEarned: 0,
+    streakDays: 0,
+    accessoriesUnlocked: [],
+  };
+  saveRecoveryPlanProgress(patientId, progress);
+  return progress;
+}
+
+export function saveRecoveryPlanProgress(patientId: string, progress: RecoveryPlanProgress) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(`recovery_plan_progress_${patientId}`, JSON.stringify(progress));
+}
+
+export function logPlanCompletion(
+  patientId: string,
+  week: number,
+  day: number,
+  exercisesCompleted: string[],
+  dietFollowed: boolean,
+  lifestyleScore: number,
+  notes: string = ""
+) {
+  let progress = getRecoveryPlanProgress(patientId);
+  if (!progress) return;
+
+  const completion: RecoveryPlanCompletion = {
+    week,
+    day,
+    exercisesCompleted,
+    dietFollowed,
+    lifestyleScore,
+    notes,
+    createdAt: new Date().toISOString(),
+  };
+
+  progress.completions.push(completion);
+
+  // Calculate points: exercises (25pts each), diet (15pts), lifestyle (10pts per 10%)
+  let pointsEarned = 0;
+  pointsEarned += exercisesCompleted.length * 25;
+  if (dietFollowed) pointsEarned += 15;
+  pointsEarned += Math.floor(lifestyleScore / 10);
+
+  progress.totalPointsEarned += pointsEarned;
+
+  // Update streak
+  const lastCompletion = progress.completions.slice(-2, -1)[0];
+  if (lastCompletion && daysSince(lastCompletion.createdAt || "") <= 1) {
+    progress.streakDays += 1;
+  } else {
+    progress.streakDays = 1;
+  }
+
+  // Unlock accessories based on milestones
+  checkAndUnlockAccessories(patientId, progress);
+
+  // Award gamification points
+  const gam = getGamification(patientId);
+  gam.points += pointsEarned;
+  gam.gems += Math.ceil(pointsEarned / 5);
+  saveGamification(patientId, gam);
+
+  saveRecoveryPlanProgress(patientId, progress);
+}
+
+function checkAndUnlockAccessories(patientId: string, progress: RecoveryPlanProgress) {
+  const gam = getGamification(patientId);
+  const accessoriesToUnlock: string[] = [];
+
+  // 7-day streak = yoga mat accessory
+  if (progress.streakDays >= 7 && !progress.accessoriesUnlocked.includes("yoga_mat")) {
+    accessoriesToUnlock.push("yoga_mat");
+  }
+
+  // 14-day streak = meditation cushion
+  if (progress.streakDays >= 14 && !progress.accessoriesUnlocked.includes("meditation_cushion")) {
+    accessoriesToUnlock.push("meditation_cushion");
+  }
+
+  // Complete week 1 = resistance band
+  const week1Completed = progress.completions.filter((c) => c.week === 1).length >= 7;
+  if (week1Completed && !progress.accessoriesUnlocked.includes("resistance_band")) {
+    accessoriesToUnlock.push("resistance_band");
+  }
+
+  // Complete full 4 weeks = achievement badge
+  const week4Completed = progress.completions.filter((c) => c.week === 4).length >= 7;
+  if (week4Completed && !progress.accessoriesUnlocked.includes("master_recovery")) {
+    accessoriesToUnlock.push("master_recovery");
+    if (!gam.badges.includes("Master of Recovery")) {
+      gam.badges.push("Master of Recovery");
+    }
+  }
+
+  // 500+ total points = champion status
+  if (progress.totalPointsEarned >= 500 && !progress.accessoriesUnlocked.includes("champion_crown")) {
+    accessoriesToUnlock.push("champion_crown");
+  }
+
+  // 100% adherence for week = weekly champion
+  for (let w = 1; w <= 4; w++) {
+    const weekCompletions = progress.completions.filter((c) => c.week === w);
+    const weekPerfect = weekCompletions.length === 7 && weekCompletions.every((c) => c.exercisesCompleted.length > 0 && c.dietFollowed);
+    if (weekPerfect && !progress.accessoriesUnlocked.includes(`week${w}_perfect`)) {
+      accessoriesToUnlock.push(`week${w}_perfect`);
+    }
+  }
+
+  // Apply unlocked accessories
+  for (const accessory of accessoriesToUnlock) {
+    if (!progress.accessoriesUnlocked.includes(accessory)) {
+      progress.accessoriesUnlocked.push(accessory);
+      gam.avatar.accessory = accessory; // Equip latest accessory
+    }
+  }
+
+  saveGamification(patientId, gam);
+}
+
+export function getPlanAdherenceScore(patientId: string): number {
+  const progress = getRecoveryPlanProgress(patientId);
+  if (!progress || !progress.completions.length) return 0;
+
+  const completions = progress.completions;
+  const exerciseAdherence = completions.filter((c) => c.exercisesCompleted.length > 0).length / completions.length;
+  const dietAdherence = completions.filter((c) => c.dietFollowed).length / completions.length;
+  const lifestyleScore = completions.reduce((a, b) => a + b.lifestyleScore, 0) / completions.length / 100;
+
+  return Math.round((exerciseAdherence * 0.4 + dietAdherence * 0.35 + lifestyleScore * 0.25) * 100);
+}
+
+export function getWeeklyProgress(patientId: string, week: number): number {
+  const progress = getRecoveryPlanProgress(patientId);
+  if (!progress) return 0;
+
+  const weekCompletions = progress.completions.filter((c) => c.week === week);
+  if (!weekCompletions.length) return 0;
+
+  const exerciseScore = weekCompletions.filter((c) => c.exercisesCompleted.length > 0).length / 7;
+  const dietScore = weekCompletions.filter((c) => c.dietFollowed).length / 7;
+  const lifestyleScore = weekCompletions.reduce((a, b) => a + b.lifestyleScore, 0) / 700;
+
+  return Math.round((exerciseScore * 0.4 + dietScore * 0.35 + lifestyleScore * 0.25) * 100);
+}
+
+// ── Full Reset Function ─────────────────────────────────────────────────────
+
+export function clearAllUserData() {
+  if (typeof window === "undefined") return;
+  const patientIds: PatientId[] = ["maria", "james", "sarah", "alex"];
+  
+  // Clear all patient-related data
+  for (const id of patientIds) {
+    localStorage.removeItem(`checkins_${id}`);
+    localStorage.removeItem(`cv_scans_${id}`);
+    localStorage.removeItem(`gamification_${id}`);
+    localStorage.removeItem(`assessment_${id}`);
+    localStorage.removeItem(`riq_assessment_${id}`);
+    localStorage.removeItem(`kinetic_report_${id}`);
+  }
+  
+  // Clear global/session data
+  localStorage.removeItem("riq_seeded");
+  localStorage.removeItem("riq_userId");
+  localStorage.removeItem("riq_role");
+  
+  // Re-seed with fresh empty data
+  seedStorage();
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Gem, Flame, ChevronRight, CheckCircle2, Camera } from "lucide-react";
+import { Gem, Flame, ChevronRight, CheckCircle2, Camera, Leaf } from "lucide-react";
 import { getGamification, getCheckins, getScans, getRecoveryScore, type PatientId } from "@/lib/mock-data";
 import { BADGES } from "@/lib/gamification";
 
@@ -25,13 +25,31 @@ export default function PatientHome() {
   const [mounted, setMounted] = useState(false);
   const [assessmentDone, setAssessmentDone] = useState(false);
   const [firstVisitDone, setFirstVisitDone] = useState(false);
+  const [recoveryPlan, setRecoveryPlan] = useState<any>(null);
 
   useEffect(() => {
     const id = localStorage.getItem("riq_userId") as PatientId;
     setUserId(id);
     setAssessmentDone(!!localStorage.getItem(`assessment_${id}`));
     setFirstVisitDone(!!localStorage.getItem(`first_visit_done_${id}`));
+    
+    // Load recovery plan
+    const plan = localStorage.getItem(`recovery_plan_${id}`);
+    if (plan) {
+      setRecoveryPlan(JSON.parse(plan));
+    }
+    
+    // Listen for storage changes from assessment page
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === `recovery_plan_${id}` && e.newValue) {
+        setRecoveryPlan(JSON.parse(e.newValue));
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
     setMounted(true);
+    
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   if (!mounted || !userId) return null;
@@ -123,6 +141,33 @@ export default function PatientHome() {
           <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
             Your practitioner is reviewing your results. Recovery exercises unlock after your first visit.
           </p>
+        </div>
+      )}
+
+      {/* Recovery Plan Widget */}
+      {recoveryPlan && (
+        <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, var(--color-hw-clay)15 0%, #10b98115 100%)", border: "1px solid var(--color-hw-clay)50" }}>
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-start gap-3">
+              <Leaf size={20} style={{ color: "var(--color-hw-clay)", marginTop: "2px" }} />
+              <div>
+                <p className="font-bold text-sm" style={{ color: "var(--color-hw-text)" }}>Your Recovery Plan Ready! 🎯</p>
+                <p className="text-xs mt-1" style={{ color: "var(--color-hw-text-muted)" }}>4-week personalized program generated</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/patient/recovery-plan" className="flex-1">
+              <button className="w-full px-4 py-2.5 rounded-lg text-sm font-bold text-white" style={{ background: "var(--color-hw-clay)" }}>
+                View Full Plan
+              </button>
+            </Link>
+            <Link href="/patient/checkin" className="flex-1">
+              <button className="w-full px-4 py-2.5 rounded-lg text-sm font-bold" style={{ background: "#fff", color: "var(--color-hw-clay)", border: "1px solid var(--color-hw-clay)" }}>
+                Start Today
+              </button>
+            </Link>
+          </div>
         </div>
       )}
 

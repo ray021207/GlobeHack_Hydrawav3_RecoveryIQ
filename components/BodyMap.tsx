@@ -28,16 +28,16 @@ const FRONT_REGIONS: BodyRegion[] = [
   { id: "chest_r", label: "Right Chest", side: "right", view: "front", path: "M100,70 L130,70 L130,160 L100,160 Z" },
   
   // FOREARMS
-  { id: "forearm_l", label: "Left Forearm", side: "left", view: "front", path: "M50,135 L70,135 L70,235 L50,235 Z" },
-  { id: "forearm_r", label: "Right Forearm", side: "right", view: "front", path: "M130,135 L150,135 L150,235 L130,235 Z" },
+  { id: "forearm_l", label: "Left Forearm", side: "left", view: "front", path: "M50,135 L70,135 L70,220 L50,220 Z" },
+  { id: "forearm_r", label: "Right Forearm", side: "right", view: "front", path: "M130,135 L150,135 L150,220 L130,220 Z" },
   
   // ABDOMEN
   { id: "abdomen_l", label: "Left Abdomen", side: "left", view: "front", path: "M70,160 L100,160 L100,235 L70,235 Z" },
   { id: "abdomen_r", label: "Right Abdomen", side: "right", view: "front", path: "M100,160 L130,160 L130,235 L100,235 Z" },
   
   // HANDS
-  { id: "hand_l", label: "Left Hand", side: "left", view: "front", path: "M50,235 L70,235 L70,260 L50,260 Z" },
-  { id: "hand_r", label: "Right Hand", side: "right", view: "front", path: "M130,235 L150,235 L150,260 L130,260 Z" },
+  { id: "hand_l", label: "Left Hand", side: "left", view: "front", path: "M50,220 L70,220 L70,235 L50,235 Z" },
+  { id: "hand_r", label: "Right Hand", side: "right", view: "front", path: "M130,220 L150,220 L150,235 L130,235 Z" },
   
   // THIGHS
   { id: "thigh_l", label: "Left Thigh", side: "left", view: "front", path: "M75,235 L100,235 L100,260 L75,260 Z" },
@@ -75,16 +75,16 @@ const BACK_REGIONS: BodyRegion[] = [
   { id: "mid_back", label: "Mid Back", view: "back", path: "M70,100 L130,100 L130,180 L70,180 Z" },
   
   // REAR FOREARMS
-  { id: "rear_forearm_l", label: "Left Forearm", side: "left", view: "back", path: "M50,135 L70,135 L70,235 L50,235 Z" },
-  { id: "rear_forearm_r", label: "Right Forearm", side: "right", view: "back", path: "M130,135 L150,135 L150,235 L130,235 Z" },
+  { id: "rear_forearm_l", label: "Left Forearm", side: "left", view: "back", path: "M50,135 L70,135 L70,220 L50,220 Z" },
+  { id: "rear_forearm_r", label: "Right Forearm", side: "right", view: "back", path: "M130,135 L150,135 L150,220 L130,220 Z" },
   
   // LOWER BACK
   { id: "lower_back_l", label: "Left Lower Back", side: "left", view: "back", path: "M70,180 L100,180 L100,235 L70,235 Z" },
   { id: "lower_back_r", label: "Right Lower Back", side: "right", view: "back", path: "M100,180 L130,180 L130,235 L100,235 Z" },
   
   // REAR HANDS
-  { id: "rear_hand_l", label: "Left Hand", side: "left", view: "back", path: "M50,235 L70,235 L70,260 L50,260 Z" },
-  { id: "rear_hand_r", label: "Right Hand", side: "right", view: "back", path: "M130,235 L150,235 L150,260 L130,260 Z" },
+  { id: "rear_hand_l", label: "Left Hand", side: "left", view: "back", path: "M50,220 L70,220 L70,235 L50,235 Z" },
+  { id: "rear_hand_r", label: "Right Hand", side: "right", view: "back", path: "M130,220 L150,220 L150,235 L130,235 Z" },
   
   // REAR THIGHS
   { id: "rear_thigh_l", label: "Left Thigh", side: "left", view: "back", path: "M75,235 L100,235 L100,260 L75,260 Z" },

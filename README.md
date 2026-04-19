@@ -10,13 +10,16 @@ RecoveryIQ is a dual-role platform designed for both patients and healthcare pra
 
 ### Patient Portal
 - **Pre-Assessment** - Guided intake with body region selection and ROM capture (5/10-second countdown timer)
-- **Movement Scan** - Track recovery progress with pose detection and joint ROM measurements
+- **Movement Scan** - Track recovery progress with live video feed and pose detection during timer countdown
 - **Daily Check-ins** - Symptom tracking, lifestyle habits, and function assessment
-- **Avatar System** - Personalized gamified character with accessories and engagement tracking
+- **Avatar System** - Personalized gamified character with unlockable accessories and engagement tracking
 - **Lifestyle Tracking** - Monitor diet, exercise, sleep, and wellness habits
 - **Leaderboard** - Compete with other patients to boost engagement and recovery adherence
 - **Recovery Score** - Real-time metrics, symmetry analysis, compensation index, and ROM progress
-- **Kinetic Report** - Comprehensive PDF report with AI-generated clinical summary and personalized recommendations
+- **Kinetic Report** - Comprehensive report with AI-generated clinical summary and personalized recommendations
+- **Recovery Plan** - 4-week Ayurveda-based personalized recovery plan with exercises, diet, and lifestyle guidance
+- **Plan Tracking** - Monitor adherence, earn points/gems, unlock accessories, maintain recovery streaks
+- **Plan Export** - Download recovery plan as text file for offline reference
 
 ### Practitioner Portal
 - **Patient Management** - View all patients, their assessments, and recovery progress
@@ -73,13 +76,12 @@ recoveryiq/
 │
 ├── lib/                          # Core business logic
 │   ├── cv-engine.ts             # Computer vision (pose detection, ROM, symmetry)
-│   ├── kinetic-analysis.ts      # Report generation and analysis
-│   ├── gamification.ts          # Scoring system and badge logic
-│   ├── mock-data.ts             # Test data for 4 patients (maria, james, sarah, alex)
+│   ├── gamification.ts          # Scoring system, streak tracking, badge unlocking
+│   ├── mock-data.ts             # Test data for 4 patients + recovery plan system
 │   ├── protocol-recs.ts         # Recovery protocol recommendations
 │   ├── protocols.ts             # Protocol definitions
 │   ├── hydrawav.ts              # Hydrawav signal processing
-│   └── claude-report-generator.ts # Claude API wrapper
+│   └── helpers.ts               # Utility functions
 │
 ├── public/                       # Static assets
 ├── package.json                  # Dependencies (Next.js 16, Anthropic SDK, etc.)
@@ -180,59 +182,124 @@ npm start
 - **Clinical Insights** - Advanced analysis of patterns and progressions
 - **PDF Export** - Download complete kinetic report
 
+### AI-Generated Recovery Plans
+- **4-Week Personalized Plan** - Claude Opus generates Ayurveda-based recovery protocols
+- **Structured Content** - Weekly focus areas, daily exercises, nutrition guidance, lifestyle tips
+- **Dosha Assessment** - Ayurvedic body constitution analysis and imbalance identification
+- **Progress Tracking** - Daily checklist for exercises, diet adherence, and lifestyle scoring
+- **Adherence Metrics** - Calculate completion rates (exercises 40%, diet 35%, lifestyle 25%)
+- **Plan Export** - Download as text file for offline reference and printing
+- **Real-Time Dashboard Widget** - Recovery plan widget appears on dashboard immediately after generation
+
 ### Gamification System
-- **Points & Gems** - Earned from check-ins, scans, and milestones
-- **Daily Streaks** - Motivate consistent engagement
-- **Achievement Badges** - first_checkin, movement_pioneer, week_warrior, symmetry_star, etc.
-- **Leaderboard** - Compare progress with other patients
-- **Avatar Customization** - Personalize with animals and accessories
+- **Points & Gems** - Earned from exercises, diet adherence, lifestyle tracking, and recovery plan completion
+- **Recovery Plan Bonuses** - 100 points + 20 gems awarded upon plan generation
+- **Daily Streaks** - Track consecutive days of recovery plan adherence with 🔥 streak indicator
+- **Achievement Accessories** - Unlock equipment and avatar customization items based on milestones:
+  - 7-day streak → Yoga Mat
+  - 14-day streak → Meditation Cushion
+  - Week 1 complete → Resistance Band
+  - Week 4 complete → Master Recovery Badge
+  - 500+ points → Champion Crown
+  - Perfect weeks (100% adherence) → Week-specific achievement badges
+- **Leaderboard** - Compare points and streaks with other patients
+- **Real-Time Updates** - Cross-tab synchronization for live streak and point tracking
 
 ## API Endpoints
 
-### POST /api/generate-report
-Generates AI-powered clinical report using Claude Sonnet 3.5
+### POST /api/generate-recovery-plan
+Generates a personalized 4-week Ayurveda-based recovery plan using Claude Opus 4
 
 **Request Body:**
 ```json
 {
-  "assessmentData": {
-    "affectedRegions": ["shoulder", "knee"],
-    "discomfortLevels": {"shoulder": 6, "knee": 4},
-    "romScores": {"shoulder_flexion": 130},
-    ...
-  }
+  "patientName": "John Doe",
+  "affectedRegions": ["shoulder", "knee"],
+  "severityLevel": "moderate",
+  "recoveryScore": 62,
+  "primaryComplaint": "Post-surgical rehabilitation",
+  "duration": "3 months",
+  "lifestyle": "sedentary"
 }
 ```
 
 **Response:**
 ```json
 {
-  "executiveSummary": "Clinical summary from Claude...",
-  "recommendations": [...],
-  "insights": [...],
-  "treatmentPriorities": [...]
+  "overviewSummary": "4-week personalized recovery plan...",
+  "ayurvedicAssessment": {
+    "dosha": "Vata-Pitta",
+    "imbalance": "Description of imbalance...",
+    "recommendations": [...]
+  },
+  "weeks": [
+    {
+      "week": 1,
+      "focus": "Foundation & Pain Management",
+      "exercises": [...],
+      "diet": [...],
+      "lifestyle": [...]
+    },
+    ...
+  ],
+  "supplementaryTips": {
+    "mobility": [...],
+    "nutrition": [...],
+    "lifestyle": [...]
+  }
 }
 ```
 
+## Design & Styling
+
+### Color Scheme (Hydrawav Palette)
+- **Primary Navy** (`#072847`) - Deep navy for sidebar and primary surfaces
+- **Warm Clay** (`#d17d5d`) - Warm tan accent for CTAs and highlights
+- **Success Green** (`#00bb7f`) - Positive indicators, achievements
+- **Cream** (`#f9f5f1`) - Light backgrounds and cards
+- **Dark Text** (`#1a1a1a`) - Primary text content
+- **Light Border** (`#e0e0e0`) - UI dividers and borders
+
+### Responsive Design
+- Mobile-first responsive layout
+- Touch-friendly buttons and controls
+- Optimized for 6-8 feet camera distance on mobile
+- Full-body frame requirements for pose detection
+
 ## Development Notes
 
-### State Management
+### State Management & Data Persistence
 - Uses React Hooks (useState, useEffect, useRef) for component state
-- localStorage for persistence across sessions
+- localStorage for persistence across sessions with keys:
+  - `riq_userId` - Current user session
+  - `recovery_plan_${userId}` - Personalized 4-week recovery plan
+  - `recovery_plan_progress_${userId}` - Weekly completion tracking and adherence data
+  - `gamification_${userId}` - Points, gems, streak counters, accessories
+- StorageEvent listeners for cross-tab real-time synchronization
 - No external state library (optimized for performance)
+
+### Recovery Plan System
+- Plans generated via `/api/generate-recovery-plan` endpoint (Claude Opus)
+- Includes weekly schedules with exercises, diet, and lifestyle guidance
+- Tracks daily completion with checkbox system
+- Calculates adherence percentage (exercises 40%, diet 35%, lifestyle 25%)
+- Awards points: 25 per exercise, 15 for diet adherence, up to 20 bonus for lifestyle
+- Maintains streaks and unlocks milestone-based accessories
 
 ### Pose Detection
 - MediaPipe model loaded from CDN for smaller bundle size
 - Requires camera permissions and proper lighting
 - Full body must be visible (6-8 feet from camera recommended)
 - Supports rear-facing cameras on mobile devices
+- Live video feed visible during movement capture with timer below
 
 ### Data Flow
 1. Patient completes assessment → data saved to localStorage
-2. Assessment data sent to `/api/generate-report`
-3. Claude analyzes and returns personalized recommendations
-4. Report displayed in KineticReportDisplay component
-5. PDF export via browser print dialog
+2. Assessment data sent to `/api/generate-recovery-plan`
+3. Claude Opus analyzes and returns personalized 4-week plan
+4. Plan displayed in RecoveryPlanDisplay with real-time tracker
+5. Gamification system awards points and tracks streaks
+6. Plan export available as text file for offline reference
 
 ## Performance
 
@@ -265,7 +332,7 @@ For issues, feature requests, or documentation: See project structure and compon
 
 ---
 
-**Last Updated:** April 2026 | **Status:** Production Ready
+**Last Updated:** April 2026 | **Status:** Production Ready with Recovery Plan System
 
 ## Key Features Implementation
 

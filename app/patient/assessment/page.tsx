@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Sparkles, Camera, CheckCircle2, Download, Share2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Sparkles, Camera, CheckCircle2, Download, Share2, Leaf, Loader } from "lucide-react";
 import { BodyMap, getRegionLabel } from "@/components/BodyMap";
 import { KineticReportDisplay } from "@/components/KineticReportDisplay";
-import { getGamification, saveGamification, type PatientId } from "@/lib/mock-data";
+import { RecoveryPlanDisplay } from "@/components/RecoveryPlanDisplay";
+import { getGamification, saveGamification, type PatientId, PATIENTS, saveRecoveryPlan, initRecoveryPlanProgress } from "@/lib/mock-data";
 import { extractRom, avgLandmarkConfidence, type RomScores, type Landmark } from "@/lib/cv-engine";
 import { generateKineticReport, formatReportDate, type AssessmentData, type KineticReport } from "@/lib/kinetic-analysis";
 
@@ -375,6 +376,8 @@ export default function PatientAssessment() {
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [report, setReport] = useState<KineticReport | null>(null);
+  const [recoveryPlan, setRecoveryPlan] = useState<any>(null);
+  const [generatingPlan, setGeneratingPlan] = useState(false);
 
   useEffect(() => {
     const id = localStorage.getItem("riq_userId") as PatientId;
@@ -446,6 +449,57 @@ export default function PatientAssessment() {
     })();
   }
 
+  async function generateRecoveryPlan() {
+    if (!report) return;
+    setGeneratingPlan(true);
+    try {
+      const patient = PATIENTS[userId];
+      const affectedRegions = state.areas.map((a) => getRegionLabel(a.regionId));
+      
+      const response = await fetch("/api/generate-recovery-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientName: patient.name,
+          affectedRegions,
+          severityLevel: report.summary.severityLevel,
+          recoveryScore: report.recoveryScore,
+          primaryComplaint: state.areas[0]?.regionId || "General recovery",
+          duration: state.areas[0]?.duration || "Unknown",
+          lifestyle: state.dailyActivities.join(", ") || "Mixed",
+        }),
+      });
+
+      if (response.ok) {
+        const plan = await response.json();
+        setRecoveryPlan(plan);
+
+        // Save plan to localStorage
+        const planId = `plan_${Date.now()}`;
+        saveRecoveryPlan(userId, { ...plan, id: planId, createdAt: new Date().toISOString() });
+
+        // Initialize progress tracking
+        initRecoveryPlanProgress(userId, planId);
+
+        // Award starting bonus points
+        const gam = getGamification(userId);
+        gam.points += 100;
+        gam.gems += 20;
+        if (!gam.badges.includes("Recovery Plan Started")) {
+          gam.badges.push("Recovery Plan Started");
+        }
+        saveGamification(userId, gam);
+      } else {
+        alert("Failed to generate recovery plan. Please try again.");
+      }
+    } catch (error) {
+      console.error("Recovery plan generation error:", error);
+      alert("Error generating recovery plan");
+    } finally {
+      setGeneratingPlan(false);
+    }
+  }
+
   const activeArea = state.areas.find((a) => a.regionId === activeRegion);
 
   if (submitted && report) {
@@ -463,6 +517,39 @@ export default function PatientAssessment() {
 
         {/* Kinetic Analysis Report with full visualization */}
         <KineticReportDisplay report={report} patientName="Your" showActions={true} />
+
+        {/* Recovery Plan Section */}
+        {!recoveryPlan && (
+          <div className="rounded-2xl p-6 text-center space-y-4" style={{ background: "linear-gradient(135deg, var(--color-hw-clay)20 0%, #10b98120 100%)", border: "2px dashed var(--color-hw-clay)" }}>
+            <div className="flex justify-center">
+              <Leaf size={28} style={{ color: "var(--color-hw-clay)" }} />
+            </div>
+            <div>
+              <p className="font-bold text-lg" style={{ color: "var(--color-hw-navy)" }}>Generate AI Recovery Plan</p>
+              <p className="text-sm" style={{ color: "var(--color-hw-muted)" }}>Get a personalized 4-week exercise, diet & lifestyle plan powered by AI + Ayurveda</p>
+            </div>
+            <button
+              onClick={generateRecoveryPlan}
+              disabled={generatingPlan}
+              className="w-full py-3 rounded-xl font-bold text-white transition-opacity disabled:opacity-50"
+              style={{ background: "var(--color-hw-clay)" }}
+            >
+              {generatingPlan ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader size={16} className="animate-spin" />
+                  Generating Plan...
+                </span>
+              ) : (
+                "Generate Recovery Plan"
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Display Recovery Plan if Generated */}
+        {recoveryPlan && (
+          <RecoveryPlanDisplay plan={recoveryPlan} />
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3">
