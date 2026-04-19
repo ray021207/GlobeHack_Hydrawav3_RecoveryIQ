@@ -87,6 +87,7 @@ export default function PatientDetailPage() {
 
   const TABS: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
+    { key: "assessment", label: "Assessment Report" },
     { key: "cv", label: "CV Movement" },
     { key: "lifestyle", label: "Lifestyle" },
     { key: "device", label: "Device Control" },
@@ -177,6 +178,20 @@ export default function PatientDetailPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ASSESSMENT REPORT */}
+        {tab === "assessment" && (
+          <div className="space-y-6">
+            <Link href={`/practitioner/patient/${patientId}/assessment-report`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white"
+              style={{ background: "var(--color-hw-clay)" }}>
+              📋 View Full Report
+            </Link>
+            <div className="text-center py-8" style={{ color: "var(--color-hw-muted)" }}>
+              <p className="text-sm">Navigate to the full assessment report to view kinetic analysis with charts and visualizations.</p>
+            </div>
           </div>
         )}
 
