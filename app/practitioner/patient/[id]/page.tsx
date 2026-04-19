@@ -5,9 +5,11 @@ import Link from "next/link";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { PATIENTS, getCheckins, getScans, getGamification, getRecoveryScore, getVisitRecommendation, type PatientId } from "@/lib/mock-data";
 import { RecoveryScore } from "@/components/RecoveryScore";
+import { KineticReportDisplay } from "@/components/KineticReportDisplay";
 import { sendDeviceCommand, PROTOCOLS, MAC } from "@/lib/hydrawav";
+import type { KineticReport } from "@/lib/kinetic-analysis";
 
-type Tab = "overview" | "cv" | "lifestyle" | "device";
+type Tab = "overview" | "cv" | "lifestyle" | "device" | "assessment";
 
 const LIFESTYLE_SECTIONS = ["Nutrition", "Sleep", "Stress", "Hydration", "Movement Snacks", "Breathwork"];
 

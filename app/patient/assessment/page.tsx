@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Sparkles, Camera, CheckCircle2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Sparkles, Camera, CheckCircle2, Download, Share2 } from "lucide-react";
 import { BodyMap, getRegionLabel } from "@/components/BodyMap";
 import { getGamification, saveGamification, type PatientId } from "@/lib/mock-data";
 import { extractRom, avgLandmarkConfidence, type RomScores, type Landmark } from "@/lib/cv-engine";
+import { generateKineticReport, formatReportDate, type AssessmentData, type KineticReport } from "@/lib/kinetic-analysis";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -299,6 +300,8 @@ export default function PatientAssessment() {
   });
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [report, setReport] = useState<KineticReport | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const id = localStorage.getItem("riq_userId") as PatientId;
@@ -328,26 +331,219 @@ export default function PatientAssessment() {
   }
 
   function submit() {
-    const data = { ...state, submittedAt: new Date().toISOString() };
+    const data: AssessmentData = { ...state, submittedAt: new Date().toISOString() };
     localStorage.setItem(`assessment_${userId}`, JSON.stringify(data));
     const capturedCount = Object.keys(state.capturedRom).length;
     const romBonus = capturedCount * 20;
     const gam = getGamification(userId);
     saveGamification(userId, { ...gam, gems: gam.gems + 150 + romBonus, points: gam.points + 150 + romBonus });
+    
+    // Generate and save kinetic report
+    const kineticReport = generateKineticReport(data);
+    localStorage.setItem(`kinetic_report_${userId}`, JSON.stringify(kineticReport));
+    
+    setReport(kineticReport);
     setSubmitted(true);
   }
 
   const activeArea = state.areas.find((a) => a.regionId === activeRegion);
 
-  if (submitted) {
+  if (submitted && report) {
     return (
-      <div className="py-10 text-center space-y-5">
-        <div className="text-6xl">✅</div>
-        <p className="text-xl font-bold font-display" style={{ color: "var(--color-hw-text)" }}>Assessment Submitted!</p>
-        <p className="text-sm" style={{ color: "var(--color-hw-text-muted)" }}>
-          Your practitioner will review your results before your first visit. You earned{" "}
-          <strong style={{ color: "#a855f7" }}>+{150 + Object.keys(state.capturedRom).length * 20} 💎</strong>
-          {Object.keys(state.capturedRom).length > 0 && <span className="text-xs"> (includes {Object.keys(state.capturedRom).length} ROM captures)</span>}!
+      <div className="py-8 space-y-6">
+        {/* Success Header */}
+        <div className="text-center space-y-3">
+          <div className="text-5xl">✅</div>
+          <p className="text-2xl font-bold font-display" style={{ color: "var(--color-hw-text)" }}>Assessment Submitted!</p>
+          <p className="text-sm" style={{ color: "var(--color-hw-text-muted)" }}>
+            Earned <strong style={{ color: "#a855f7" }}>+{150 + Object.keys(state.capturedRom).length * 20} 💎</strong>
+            {Object.keys(state.capturedRom).length > 0 && <span className="text-xs"> (includes {Object.keys(state.capturedRom).length} ROM captures)</span>}
+          </p>
+        </div>
+
+        {/* Kinetic Analysis Report */}
+        <div className="rounded-2xl p-6 space-y-6" style={{ background: "#fff", border: "1px solid var(--color-hw-border)" }}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--color-hw-text-muted)" }}>Kinetic Analysis Report</p>
+              <p className="text-lg font-bold font-display" style={{ color: "var(--color-hw-text)" }}>Your Recovery Profile</p>
+              <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>{formatReportDate(report.submittedAt)}</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => window.print()}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Download Report">
+                <Download size={18} style={{ color: "var(--color-hw-text)" }} />
+              </button>
+            </div>
+          </div>
+
+          <div className="h-px" style={{ background: "var(--color-hw-border)" }} />
+
+          {/* Summary Metrics */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Severity Level</p>
+              <p className="text-lg font-bold" style={{ color: report.summary.severityLevel === "Severe" ? "#ef4444" : report.summary.severityLevel === "Moderate" ? "#f59e0b" : "#10b981" }}>
+                {report.summary.severityLevel}
+              </p>
+            </div>
+            <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Recovery Score</p>
+              <p className="text-lg font-bold" style={{ color: "var(--color-hw-clay)" }}>
+                {report.recoveryScore}%
+              </p>
+            </div>
+            <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Avg. Discomfort</p>
+              <p className="text-lg font-bold" style={{ color: "var(--color-hw-text)" }}>
+                {report.summary.averageDiscomfort}/10
+              </p>
+            </div>
+            <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Areas Affected</p>
+              <p className="text-lg font-bold" style={{ color: "var(--color-hw-text)" }}>
+                {report.summary.totalAreasAffected}
+              </p>
+            </div>
+          </div>
+
+          {/* Primary Areas */}
+          {report.summary.primaryAreas.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Primary Areas of Focus</p>
+              <div className="flex flex-wrap gap-2">
+                {report.summary.primaryAreas.map((areaId) => (
+                  <span key={areaId} className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                    style={{ background: "var(--color-hw-clay)", color: "#fff" }}>
+                    {getRegionLabel(areaId)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Insights */}
+          {report.insights.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Key Insights</p>
+              <div className="space-y-2">
+                {report.insights.map((insight, i) => (
+                  <div key={i} className="flex gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: "var(--color-hw-clay)" }} />
+                    <p className="text-sm" style={{ color: "var(--color-hw-text)" }}>{insight}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recommendations */}
+          {report.recommendations.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Recommendations</p>
+              <div className="space-y-2">
+                {report.recommendations.map((rec, i) => (
+                  <div key={i} className="flex gap-3 p-2 rounded-lg" style={{ background: "var(--color-hw-cream)" }}>
+                    <Check size={16} style={{ color: "var(--color-hw-green)", flexShrink: 0, marginTop: "2px" }} />
+                    <p className="text-sm" style={{ color: "var(--color-hw-text)" }}>{rec}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ROM Analysis */}
+          {report.romAnalysis.exercisesCaptured > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Range of Motion Baseline</p>
+              <div className="p-3 rounded-lg" style={{ background: "var(--color-hw-cream)" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--color-hw-text)" }}>
+                  {report.romAnalysis.exercisesCaptured} movement{report.romAnalysis.exercisesCaptured > 1 ? "s" : ""} captured
+                </p>
+                <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
+                  Your practitioner will use these baselines to track progress
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Behavioral Patterns */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--color-hw-text-muted)" }}>Behavioral Patterns</p>
+            <div className="space-y-3">
+              {report.behavioralPatterns.worse.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: "#ef4444" }}>Makes It Worse</p>
+                  <div className="flex flex-wrap gap-1">
+                    {report.behavioralPatterns.worse.map((factor) => (
+                      <span key={factor} className="px-2 py-1 text-xs rounded" style={{ background: "#ef444420", color: "#dc2626" }}>
+                        {factor}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {report.behavioralPatterns.better.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold mb-1" style={{ color: "#10b981" }}>Makes It Better</p>
+                  <div className="flex flex-wrap gap-1">
+                    {report.behavioralPatterns.better.map((factor) => (
+                      <span key={factor} className="px-2 py-1 text-xs rounded" style={{ background: "#10b98120", color: "#059669" }}>
+                        {factor}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sleep & Activities */}
+          {(report.behavioralPatterns.sleepPosture || report.behavioralPatterns.dailyActivities.length > 0) && (
+            <div className="grid grid-cols-2 gap-4">
+              {report.behavioralPatterns.sleepPosture && (
+                <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+                  <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Sleep Posture</p>
+                  <p className="text-sm font-semibold" style={{ color: "var(--color-hw-text)" }}>{report.behavioralPatterns.sleepPosture}</p>
+                </div>
+              )}
+              {report.behavioralPatterns.dailyActivities.length > 0 && (
+                <div className="rounded-lg p-3" style={{ background: "var(--color-hw-cream)" }}>
+                  <p className="text-xs font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>Daily Activities</p>
+                  <p className="text-xs" style={{ color: "var(--color-hw-text)" }}>{report.behavioralPatterns.dailyActivities.slice(0, 2).join(", ")}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="h-px" style={{ background: "var(--color-hw-border)" }} />
+
+          {/* Next Steps */}
+          <div className="rounded-lg p-4" style={{ background: "var(--color-hw-clay)15", border: "1px solid var(--color-hw-clay)40" }}>
+            <p className="text-sm font-bold mb-2" style={{ color: "var(--color-hw-text)" }}>What's Next?</p>
+            <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
+              Your practitioner will review this report and create a personalized recovery plan before your first appointment. You'll receive updates on your progress through check-ins and ROM comparisons.
+            </p>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <button onClick={() => router.push("/patient")}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold"
+            style={{ background: "#fff", color: "var(--color-hw-text)", border: "1px solid var(--color-hw-border)" }}>
+            Back to Dashboard
+          </button>
+          <button onClick={() => router.push("/patient/leaderboard")}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+            style={{ background: "var(--color-hw-clay)" }}>
+            View Leaderboard
+          </button>
+        </div>
+      </div>
+    );
+  }
         </p>
         <div className="rounded-2xl p-5 text-left space-y-2" style={{ background: "#fff", border: "1px solid var(--color-hw-border)" }}>
           <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Your pet thanks you</p>
