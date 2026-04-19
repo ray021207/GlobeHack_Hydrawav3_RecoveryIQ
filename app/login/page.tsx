@@ -8,6 +8,7 @@ const CREDENTIALS: Record<string, { password: string; role: "practitioner" | "pa
   maria:        { password: "maria123",   role: "patient",      userId: "maria" },
   james:        { password: "james123",   role: "patient",      userId: "james" },
   sarah:        { password: "sarah123",   role: "patient",      userId: "sarah" },
+  alex:         { password: "alex123",    role: "patient",      userId: "alex" },
 };
 
 export default function LoginPage() {
@@ -55,7 +56,7 @@ export default function LoginPage() {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="practitioner / maria / james / sarah"
+              placeholder="practitioner / maria / james / sarah / alex"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={{ background: "rgba(255,255,255,0.08)", color: "#fff", border: "1px solid rgba(255,255,255,0.12)" }}
               autoCapitalize="none"

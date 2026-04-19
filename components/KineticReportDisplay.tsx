@@ -71,9 +71,9 @@ export function KineticReportDisplay({
         className="rounded-2xl p-6 text-white overflow-hidden relative"
         style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)" }}
       >
-        <div className="relative z-10">
+        <div className="relative z-10 pr-16">
           <p className="text-sm font-semibold uppercase tracking-wider opacity-90">Kinetic Analysis Report</p>
-          <h2 className="text-3xl font-bold mb-2">{patientName}'s Recovery Profile</h2>
+          <h2 className="text-3xl font-bold mb-2 leading-tight break-words">{patientName}'s Recovery Profile</h2>
           <p className="text-sm opacity-90">
             {new Date(report.submittedAt).toLocaleDateString("en-US", {
               weekday: "long",
@@ -85,7 +85,26 @@ export function KineticReportDisplay({
         </div>
         {showActions && (
           <button
-            onClick={() => window.print()}
+            onClick={() => {
+              const element = document.documentElement;
+              const opt = {
+                margin: 10,
+                filename: `recovery-report-${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'png', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+              };
+              
+              // Fallback: Use print dialog for PDF
+              const printWindow = window.open('', '', 'height=600,width=800');
+              if (printWindow) {
+                printWindow.document.write(element.innerHTML);
+                printWindow.document.close();
+                setTimeout(() => {
+                  printWindow.print();
+                }, 250);
+              }
+            }}
             className="absolute top-6 right-6 p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
             title="Download Report"
           >
@@ -93,6 +112,27 @@ export function KineticReportDisplay({
           </button>
         )}
       </div>
+
+      {/* Claude AI Executive Summary */}
+      {report.summary.executiveSummary && (
+        <div
+          className="rounded-2xl p-6 border-l-4"
+          style={{
+            background: "linear-gradient(135deg, #f0f9ff 0%, #eff6ff 100%)",
+            borderColor: "var(--color-hw-navy)",
+          }}
+        >
+          <div className="flex gap-3 mb-3">
+            <Zap size={20} style={{ color: "var(--color-hw-clay)" }} />
+            <p className="text-sm font-bold" style={{ color: "var(--color-hw-text)" }}>
+              Clinical Summary (AI-Generated)
+            </p>
+          </div>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--color-hw-text)" }}>
+            {report.summary.executiveSummary}
+          </p>
+        </div>
+      )}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -280,9 +320,12 @@ export function KineticReportDisplay({
       {/* Key Insights */}
       {report.insights.length > 0 && (
         <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid var(--color-hw-border)" }}>
-          <p className="text-sm font-bold mb-4" style={{ color: "var(--color-hw-text)" }}>
-            💡 Key Insights
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle size={18} style={{ color: "var(--color-hw-clay)" }} />
+            <p className="text-sm font-bold" style={{ color: "var(--color-hw-text)" }}>
+              Clinical Insights (AI Analysis)
+            </p>
+          </div>
           <div className="space-y-3">
             {report.insights.map((insight, i) => (
               <div key={i} className="flex gap-3 p-3 rounded-lg" style={{ background: "var(--color-hw-cream)" }}>
@@ -299,9 +342,12 @@ export function KineticReportDisplay({
       {/* Recommendations */}
       {report.recommendations.length > 0 && (
         <div className="rounded-2xl p-6" style={{ background: "#fff", border: "1px solid var(--color-hw-border)" }}>
-          <p className="text-sm font-bold mb-4" style={{ color: "var(--color-hw-text)" }}>
-            🎯 Recommended Actions
-          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <Target size={18} style={{ color: "var(--color-hw-clay)" }} />
+            <p className="text-sm font-bold" style={{ color: "var(--color-hw-text)" }}>
+              Personalized Recommendations (AI-Enhanced)
+            </p>
+          </div>
           <div className="space-y-2">
             {report.recommendations.map((rec, i) => (
               <div key={i} className="flex gap-3 p-3 rounded-lg" style={{ background: "#10b98115" }}>
@@ -328,39 +374,47 @@ export function KineticReportDisplay({
                   <p className="font-semibold text-sm" style={{ color: "var(--color-hw-text)" }}>
                     {exercise.replace(/_/g, " ")}
                   </p>
-                  <span
-                    className="text-xs px-2 py-1 rounded-full font-semibold"
-                    style={{
-                      background: `rgba(${Math.round(rom.confidence * 255)}, 150, 100, 0.2)`,
-                      color: `rgb(${Math.round(rom.confidence * 255)}, 100, 50)`,
-                    }}
-                  >
-                    {Math.round(rom.confidence * 100)}% Confidence
-                  </span>
+                  {(() => {
+                    // Calculate confidence from ROM values (normalized to 0-1)
+                    const values = Object.values(rom);
+                    const avgRom = values.reduce((a, b) => a + b, 0) / values.length;
+                    const confidence = Math.min(avgRom / 180, 1); // Normalize to 0-1
+                    return (
+                      <span
+                        className="text-xs px-2 py-1 rounded-full font-semibold"
+                        style={{
+                          background: `rgba(${Math.round(confidence * 255)}, 150, 100, 0.2)`,
+                          color: `rgb(${Math.round(confidence * 255)}, 100, 50)`,
+                        }}
+                      >
+                        {Math.round(confidence * 100)}% Measurement
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
-                      Extension
+                      Left Side
                     </p>
                     <p className="text-lg font-bold" style={{ color: "var(--color-hw-clay)" }}>
-                      {Math.round(rom.extension)}°
+                      {Math.round((rom.shoulder_l + rom.hip_l + rom.knee_l) / 3)}°
                     </p>
                   </div>
                   <div>
                     <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
-                      Flexion
+                      Right Side
                     </p>
                     <p className="text-lg font-bold" style={{ color: "var(--color-hw-clay)" }}>
-                      {Math.round(rom.flexion)}°
+                      {Math.round((rom.shoulder_r + rom.hip_r + rom.knee_r) / 3)}°
                     </p>
                   </div>
                   <div>
                     <p className="text-xs" style={{ color: "var(--color-hw-text-muted)" }}>
-                      Range
+                      Symmetry
                     </p>
                     <p className="text-lg font-bold" style={{ color: "var(--color-hw-clay)" }}>
-                      {Math.round(rom.flexion - rom.extension)}°
+                      {Math.round(Math.abs((rom.shoulder_l - rom.shoulder_r + rom.hip_l - rom.hip_r + rom.knee_l - rom.knee_r) / 3))}°
                     </p>
                   </div>
                 </div>

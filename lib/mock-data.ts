@@ -1,6 +1,6 @@
 "use client";
 
-export type PatientId = "maria" | "james" | "sarah";
+export type PatientId = "maria" | "james" | "sarah" | "alex";
 
 export type Patient = {
   id: PatientId;
@@ -86,6 +86,19 @@ export const PATIENTS: Record<PatientId, Patient> = {
     condition_duration: "subacute",
     activity_ranking: ["sport", "running"],
   },
+  alex: {
+    id: "alex",
+    name: "Alex Rodriguez",
+    age: 51,
+    phone: "+16025550104",
+    dysfunction_profile: "postural_correction",
+    primary_region: "neck",
+    prior_injuries: ["whiplash"],
+    sleep_posture: "back",
+    discomfort_level: 5,
+    condition_duration: "chronic",
+    activity_ranking: ["office", "computer"],
+  },
 };
 
 const MOCK_CHECKINS: Record<PatientId, Checkin[]> = {
@@ -110,6 +123,13 @@ const MOCK_CHECKINS: Record<PatientId, Checkin[]> = {
     { id: "c4", timestamp: "2026-04-16T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 1.0 },
     { id: "c5", timestamp: "2026-04-18T09:00:00Z", pain: 2, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Feeling strong!", lifestyle_score: 1.0 },
   ],
+  alex: [
+    { id: "c1", timestamp: "2026-04-07T09:00:00Z", pain: 6, function_rating: "partial", lifestyle: { meds: true, exercises: false, sleep: false, ate_well: false }, note: "Neck tension from desk work", lifestyle_score: 0.25 },
+    { id: "c2", timestamp: "2026-04-10T09:00:00Z", pain: 5, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Trying stretches", lifestyle_score: 0.75 },
+    { id: "c3", timestamp: "2026-04-13T09:00:00Z", pain: 4, function_rating: "partial", lifestyle: { meds: true, exercises: true, sleep: true, ate_well: true }, note: "Noticing improvement", lifestyle_score: 1.0 },
+    { id: "c4", timestamp: "2026-04-16T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "", lifestyle_score: 1.0 },
+    { id: "c5", timestamp: "2026-04-19T09:00:00Z", pain: 3, function_rating: "yes", lifestyle: { meds: false, exercises: true, sleep: true, ate_well: true }, note: "Feeling much better!", lifestyle_score: 1.0 },
+  ],
 };
 
 const MOCK_SCANS: Record<PatientId, CvScan[]> = {
@@ -125,12 +145,17 @@ const MOCK_SCANS: Record<PatientId, CvScan[]> = {
     { id: "s1", type: "pre_session", timestamp: "2026-04-12T10:00:00Z", rom: { shoulder_l: 162, shoulder_r: 160, hip_l: 118, hip_r: 115, knee_l: 120, knee_r: 138 }, symmetry_score: 14, compensation_index: 42, baseline_tier: 2, confidence: 0.88 },
     { id: "s2", type: "post_session", timestamp: "2026-04-12T11:30:00Z", rom: { shoulder_l: 164, shoulder_r: 162, hip_l: 122, hip_r: 120, knee_l: 132, knee_r: 140 }, symmetry_score: 6, compensation_index: 28, baseline_tier: 2, confidence: 0.91 },
   ],
+  alex: [
+    { id: "s1", type: "pre_session", timestamp: "2026-04-13T10:00:00Z", rom: { shoulder_l: 145, shoulder_r: 138, hip_l: 105, hip_r: 108, knee_l: 132, knee_r: 135 }, symmetry_score: 19, compensation_index: 68, baseline_tier: 2, confidence: 0.84 },
+    { id: "s2", type: "post_session", timestamp: "2026-04-13T11:30:00Z", rom: { shoulder_l: 155, shoulder_r: 152, hip_l: 110, hip_r: 112, knee_l: 135, knee_r: 138 }, symmetry_score: 12, compensation_index: 45, baseline_tier: 2, confidence: 0.87 },
+  ],
 };
 
 const MOCK_GAM: Record<PatientId, Gamification> = {
   maria: { points: 420, gems: 420, streak: 5, lastCheckin: "2026-04-17T09:00:00Z", badges: ["first_checkin", "movement_pioneer"], avatar: { animal: "fox", accessory: null, name: "Swift Fox" } },
   james: { points: 280, gems: 280, streak: 3, lastCheckin: "2026-04-18T09:00:00Z", badges: ["first_checkin"], avatar: { animal: "fox", accessory: null, name: "Iron Bear" } },
   sarah: { points: 560, gems: 560, streak: 7, lastCheckin: "2026-04-18T09:00:00Z", badges: ["first_checkin", "movement_pioneer", "week_warrior", "symmetry_star"], avatar: { animal: "fox", accessory: null, name: "Swift Eagle" } },
+  alex: { points: 340, gems: 340, streak: 4, lastCheckin: "2026-04-19T09:00:00Z", badges: ["first_checkin", "movement_pioneer"], avatar: { animal: "bear", accessory: null, name: "Steady Bear" } },
 };
 
 // ── localStorage helpers ──────────────────────────────────────────────────────

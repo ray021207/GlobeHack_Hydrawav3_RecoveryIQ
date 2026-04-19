@@ -9,7 +9,7 @@ import { KineticReportDisplay } from "@/components/KineticReportDisplay";
 import { sendDeviceCommand, PROTOCOLS, MAC } from "@/lib/hydrawav";
 import type { KineticReport } from "@/lib/kinetic-analysis";
 
-type Tab = "overview" | "cv" | "lifestyle" | "device" | "assessment";
+type Tab = "overview" | "cv" | "lifestyle" | "device" | "assessment" | "therapy-plan";
 
 const LIFESTYLE_SECTIONS = ["Nutrition", "Sleep", "Stress", "Hydration", "Movement Snacks", "Breathwork"];
 
@@ -88,6 +88,7 @@ export default function PatientDetailPage() {
   const TABS: { key: Tab; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "assessment", label: "Assessment Report" },
+    { key: "therapy-plan", label: "Therapy Plan" },
     { key: "cv", label: "CV Movement" },
     { key: "lifestyle", label: "Lifestyle" },
     { key: "device", label: "Device Control" },
@@ -191,6 +192,20 @@ export default function PatientDetailPage() {
             </Link>
             <div className="text-center py-8" style={{ color: "var(--color-hw-muted)" }}>
               <p className="text-sm">Navigate to the full assessment report to view kinetic analysis with charts and visualizations.</p>
+            </div>
+          </div>
+        )}
+
+        {/* THERAPY PLAN */}
+        {tab === "therapy-plan" && (
+          <div className="space-y-6">
+            <Link href={`/practitioner/patient/${patientId}/therapy-plan`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white"
+              style={{ background: "var(--color-hw-clay)" }}>
+              🎯 View Full Therapy Plan
+            </Link>
+            <div className="text-center py-8" style={{ color: "var(--color-hw-muted)" }}>
+              <p className="text-sm">Navigate to the full therapy plan to view protocols, Hydrawav settings, and treatment timeline.</p>
             </div>
           </div>
         )}

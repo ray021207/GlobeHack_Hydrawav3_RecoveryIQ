@@ -27,6 +27,7 @@ export interface KineticReport {
     totalAreasAffected: number;
     severityLevel: "Mild" | "Moderate" | "Severe";
     averageDiscomfort: number;
+    executiveSummary?: string;
   };
   affectedRegions: Array<{
     region: string;
@@ -48,6 +49,7 @@ export interface KineticReport {
   };
   recommendations: string[];
   insights: string[];
+  treatmentPriorities?: string[];
   recoveryScore: number;
 }
 
@@ -63,7 +65,7 @@ export function generateKineticReport(data: AssessmentData): KineticReport {
   else if (avgDiscomfort > 4) severityLevel = "Moderate";
 
   const recommendations = generateRecommendations(data, severityLevel);
-  const insights = generateInsights(data, averageDiscomfort);
+  const insights = generateInsights(data, avgDiscomfort);
   const recoveryScore = calculateRecoveryScore(data);
 
   return {

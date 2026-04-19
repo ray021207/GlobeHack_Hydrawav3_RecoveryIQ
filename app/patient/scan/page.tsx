@@ -4,14 +4,24 @@ import { PATIENTS, saveScan, type PatientId, type CvScan } from "@/lib/mock-data
 import { addPoints, checkAndAwardBadges, BADGES } from "@/lib/gamification";
 import { extractRom, computeSymmetry, computeCompensation, avgLandmarkConfidence, formatRomDelta, type RomScores, type Landmark } from "@/lib/cv-engine";
 
-type Phase = "consent" | "scanning" | "complete";
+type Phase = "consent" | "movement-select" | "scanning" | "complete";
 
 const TIMER_OPTIONS = [3, 5, 10] as const;
 type TimerOption = (typeof TIMER_OPTIONS)[number];
 
+// Recovery tracking exercises
+const RECOVERY_EXERCISES = [
+  { id: "squat",             label: "Squat",              cue: "Feet shoulder-width, squat as low as comfortable", joints: ["hip_l", "hip_r", "knee_l", "knee_r"] },
+  { id: "forward_bend",      label: "Forward Bend",       cue: "Stand straight and bend forward as far as comfortable", joints: ["hip_l", "hip_r"] },
+  { id: "shoulder_flexion",  label: "Shoulder Flexion",   cue: "Raise both arms forward and overhead as high as possible", joints: ["shoulder_l", "shoulder_r"] },
+  { id: "overhead_reach",    label: "Overhead Reach",     cue: "Reach both arms directly overhead, palms facing inward", joints: ["shoulder_l", "shoulder_r"] },
+  { id: "lunge",             label: "Lunge",              cue: "Step forward into a lunge position, hold still", joints: ["hip_l", "hip_r", "knee_l", "knee_r"] },
+];
+
 export default function ScanPage() {
   const [userId, setUserId] = useState<PatientId>("maria");
   const [phase, setPhase] = useState<Phase>("consent");
+  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
   const [status, setStatus] = useState("Position yourself 6 feet from camera");
   const [romScores, setRomScores] = useState<RomScores | null>(null);
@@ -20,7 +30,10 @@ export default function ScanPage() {
   const [landmarks, setLandmarks] = useState<Landmark[] | null>(null);
   const [timerDuration, setTimerDuration] = useState<TimerOption>(5);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [captureTimer, setCaptureTimer] = useState<number | null>(null);
+  const [timerMode, setTimerMode] = useState<"5" | "10" | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,93 +46,100 @@ export default function ScanPage() {
   }, []);
 
   const initCamera = useCallback(async () => {
-    setStatus("Requesting camera access...");
+    setStatus("Requesting camera...");
     try {
       let stream: MediaStream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } });
-      } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      }
+      try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } }); }
+      catch { stream = await navigator.mediaDevices.getUserMedia({ video: true }); }
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => videoRef.current?.play().catch(() => {});
         try { await videoRef.current.play(); } catch { /* handled by onloadedmetadata */ }
       }
       setStatus("Loading movement model...");
-      await initMediaPipe();
-    } catch {
-      setStatus("Camera access denied — please allow camera permissions and refresh");
-    }
+      if (!plRef.current) {
+        const { PoseLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+        for (const delegate of ["GPU", "CPU"] as const) {
+          try {
+            plRef.current = await PoseLandmarker.createFromOptions(vision, {
+              baseOptions: { modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task", delegate },
+              runningMode: "VIDEO", numPoses: 1,
+            });
+            break;
+          } catch { /* try next */ }
+        }
+      }
+      setStatus("Step back until your full body is visible");
+    } catch { setStatus("Camera access denied — please allow permissions and retry"); }
   }, []);
 
   async function initMediaPipe() {
-    const { PoseLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-    );
-    for (const delegate of ["GPU", "CPU"] as const) {
-      try {
-        plRef.current = await PoseLandmarker.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-            delegate,
-          },
-          runningMode: "VIDEO",
-          numPoses: 1,
-        });
-        break;
-      } catch { /* try next */ }
+    setStatus("Loading pose detection model...");
+    try {
+      const { PoseLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+      );
+      let modelLoaded = false;
+      for (const delegate of ["GPU", "CPU"] as const) {
+        try {
+          plRef.current = await PoseLandmarker.createFromOptions(vision, {
+            baseOptions: {
+              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+              delegate,
+            },
+            runningMode: "VIDEO",
+            numPoses: 1,
+          });
+          modelLoaded = true;
+          console.log(`PoseLandmarker loaded with ${delegate}`);
+          break;
+        } catch (e) {
+          console.log(`Failed to load with ${delegate}, trying next...`);
+        }
+      }
+      if (modelLoaded) {
+        setStatus("Position yourself 6–8 feet from camera, full body visible");
+      } else {
+        setStatus("Failed to load pose model. Please refresh the page.");
+      }
+    } catch (error) {
+      console.error("MediaPipe initialization error:", error);
+      setStatus("Camera/model loading error. Please refresh and try again.");
     }
-    setStatus("Step back until your full body is visible");
   }
 
   useEffect(() => {
     if (phase !== "scanning" || !plRef.current) return;
     const pl = plRef.current as { detectForVideo: (v: HTMLVideoElement, t: number) => { landmarks: Landmark[][] } };
-
     const draw = () => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
+      const video = videoRef.current; const canvas = canvasRef.current;
       if (!video || !canvas || video.readyState < 2) { animRef.current = requestAnimationFrame(draw); return; }
-
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d"); if (!ctx) return;
       const result = pl.detectForVideo(video, performance.now());
       if (result.landmarks?.[0]) {
         const lms = result.landmarks[0];
-        setLandmarks(lms);
         const conf = avgLandmarkConfidence(lms);
         setConfidence(conf);
-
-        // Draw skeleton
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const CONNECTIONS = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[24,26],[25,27],[26,28]];
-        ctx.strokeStyle = conf >= 0.65 ? "#2dd4bf" : "#f59e0b";
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = conf >= 0.65 ? "#2dd4bf" : "#f59e0b"; ctx.lineWidth = 2;
         for (const [a, b] of CONNECTIONS) {
-          const la = lms[a], lb = lms[b];
-          if (!la || !lb) continue;
-          ctx.beginPath();
-          ctx.moveTo(la.x * canvas.width, la.y * canvas.height);
-          ctx.lineTo(lb.x * canvas.width, lb.y * canvas.height);
-          ctx.stroke();
+          const la = lms[a], lb = lms[b]; if (!la || !lb) continue;
+          ctx.beginPath(); ctx.moveTo(la.x * canvas.width, la.y * canvas.height);
+          ctx.lineTo(lb.x * canvas.width, lb.y * canvas.height); ctx.stroke();
         }
         for (const lm of lms.slice(11, 29)) {
           ctx.fillStyle = (lm.visibility ?? 1) >= 0.65 ? "#22c55e" : "#ef4444";
-          ctx.beginPath();
-          ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, 2 * Math.PI);
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(lm.x * canvas.width, lm.y * canvas.height, 4, 0, 2 * Math.PI); ctx.fill();
         }
-
-        if (conf >= 0.65) setRomScores(extractRom(lms));
-        else setStatus("Step back so your full body is visible");
+        if (conf >= 0.65) { setRomScores(extractRom(lms)); setStatus("✓ Body detected — Ready to capture"); }
+        else setStatus("Step back — full body must be visible");
       } else {
-        setLandmarks(null);
         setConfidence(0);
+        setStatus("No body detected — stand 6–8 feet from camera");
       }
       animRef.current = requestAnimationFrame(draw);
     };
@@ -127,33 +147,44 @@ export default function ScanPage() {
     return () => cancelAnimationFrame(animRef.current);
   }, [phase]);
 
+  // Capture timer countdown effect
+  useEffect(() => {
+    if (captureTimer === null || captureTimer <= 0) return;
+
+    const timer = setInterval(() => {
+      setCaptureTimer((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [captureTimer]);
+
+  // Auto-capture when timer reaches zero
+  useEffect(() => {
+    if (captureTimer === 0) {
+      setCaptureTimer(null);
+      setTimerMode(null);
+      captureResults();
+    }
+  }, [captureTimer]);
+
   function startScan() {
+    setPhase("movement-select");
+  }
+
+  function selectMovementAndStartCamera(exerciseId: string) {
+    setSelectedExercise(exerciseId);
     setPhase("scanning");
+    setStatus("Loading camera and pose detection...");
     initCamera();
   }
 
-  function startCountdown() {
+  function startCaptureTimer(seconds: 5 | 10) {
     if (!romScores || confidence < 0.65) {
       setStatus("Position not clear — ensure full body is visible");
       return;
     }
-    setCountdown(timerDuration);
-    let remaining = timerDuration;
-    countdownRef.current = setInterval(() => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        clearInterval(countdownRef.current!);
-        setCountdown(null);
-        captureResults();
-      } else {
-        setCountdown(remaining);
-      }
-    }, 1000);
-  }
-
-  function cancelCountdown() {
-    if (countdownRef.current) clearInterval(countdownRef.current);
-    setCountdown(null);
+    setCaptureTimer(seconds);
+    setTimerMode(seconds === 5 ? "5" : "10");
   }
 
   function captureResults() {
@@ -201,7 +232,7 @@ export default function ScanPage() {
         <div className="space-y-5">
           <div>
             <h1 className="text-xl font-bold" style={{ color: "var(--color-hw-navy)" }}>Movement Scan</h1>
-            <p className="text-sm mt-0.5" style={{ color: "var(--color-hw-muted)" }}>60-second on-device analysis · +100 pts</p>
+            <p className="text-sm mt-0.5" style={{ color: "var(--color-hw-muted)" }}>Track your recovery progress · +100 pts</p>
           </div>
           <div className="rounded-2xl p-6 space-y-4" style={{ background: "var(--color-hw-card)", border: "1px solid var(--color-hw-border)" }}>
             <p className="font-semibold" style={{ color: "var(--color-hw-navy)" }}>Camera Access</p>
@@ -221,36 +252,80 @@ export default function ScanPage() {
         </div>
       )}
 
+      {phase === "movement-select" && (
+        <div className="space-y-5">
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: "var(--color-hw-navy)" }}>Choose Movement</h1>
+            <p className="text-sm mt-0.5" style={{ color: "var(--color-hw-muted)" }}>Select which recovery movement to track</p>
+          </div>
+          <div className="space-y-3">
+            {RECOVERY_EXERCISES.map((exercise) => (
+              <button
+                key={exercise.id}
+                onClick={() => selectMovementAndStartCamera(exercise.id)}
+                className="w-full rounded-2xl p-4 text-left transition-all hover:shadow-md"
+                style={{
+                  background: "var(--color-hw-card)",
+                  border: "1px solid var(--color-hw-border)",
+                }}
+              >
+                <p className="font-semibold mb-1" style={{ color: "var(--color-hw-navy)" }}>
+                  {exercise.label}
+                </p>
+                <p className="text-sm" style={{ color: "var(--color-hw-muted)" }}>
+                  {exercise.cue}
+                </p>
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setPhase("consent")}
+            className="w-full py-2.5 rounded-xl font-semibold"
+            style={{ background: "var(--color-hw-cream)", color: "var(--color-hw-navy)", border: "1px solid var(--color-hw-border)" }}
+          >
+            Back
+          </button>
+        </div>
+      )}
+
       {phase === "scanning" && (
         <div className="space-y-4">
+          {/* Movement Instructions */}
+          {selectedExercise && (
+            <div
+              className="rounded-2xl p-4 text-center border-l-4"
+              style={{
+                background: "linear-gradient(135deg, var(--color-hw-clay)10 0%, #d9770620 100%)",
+                borderColor: "var(--color-hw-clay)",
+              }}
+            >
+              <p className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: "var(--color-hw-text-muted)" }}>
+                Movement to Track
+              </p>
+              <p className="text-lg font-bold mb-2" style={{ color: "var(--color-hw-clay)" }}>
+                {RECOVERY_EXERCISES.find((e) => e.id === selectedExercise)?.label}
+              </p>
+              <p className="text-sm" style={{ color: "var(--color-hw-text)" }}>
+                {RECOVERY_EXERCISES.find((e) => e.id === selectedExercise)?.cue}
+              </p>
+            </div>
+          )}
+
           <h1 className="text-xl font-bold" style={{ color: "var(--color-hw-navy)" }}>Movement Scan</h1>
 
           <div className="relative rounded-2xl overflow-hidden" style={{ background: "#000", aspectRatio: "4/3" }}>
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-            {/* Countdown overlay */}
-            {countdown !== null && (
+            {/* Capture Timer Overlay */}
+            {captureTimer !== null && (
               <div className="absolute inset-0 flex flex-col items-center justify-center"
-                style={{ background: "rgba(0,0,0,0.55)" }}>
-                <div
-                  className="w-28 h-28 rounded-full flex items-center justify-center font-bold font-display"
-                  style={{
-                    fontSize: "4rem",
-                    color: "#fff",
-                    background: "rgba(255,255,255,0.15)",
-                    border: "4px solid rgba(255,255,255,0.6)",
-                    boxShadow: "0 0 40px rgba(255,255,255,0.2)",
-                    lineHeight: 1,
-                  }}>
-                  {countdown}
+                style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)" }}>
+                <p className="text-sm font-semibold mb-4" style={{ color: "#fff" }}>Capturing in</p>
+                <div style={{ fontSize: "7rem", fontWeight: "bold", lineHeight: "1", color: "#fff", marginBottom: "20px" }}>
+                  {captureTimer}
                 </div>
-                <p className="mt-4 text-sm font-semibold text-white opacity-80">Hold still…</p>
-                <button onClick={cancelCountdown}
-                  className="mt-4 px-4 py-1.5 rounded-full text-xs font-semibold"
-                  style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
-                  Cancel
-                </button>
+                <p className="text-sm" style={{ color: "#fff" }}>Hold pose still and stay in frame</p>
               </div>
             )}
 
@@ -267,26 +342,26 @@ export default function ScanPage() {
             </div>
           </div>
 
-          <p className="text-sm text-center" style={{ color: "var(--color-hw-muted)" }}>{status}</p>
+          <p className="text-sm text-center" style={{ color: "var(--color-hw-muted)" }}>
+            {confidence < 0.65 && status === "Step back so your full body is visible" ? "📸 Step back — full body must be visible" : status}
+          </p>
 
           {/* Timer selector + capture button */}
-          {romScores && confidence >= 0.65 && countdown === null && (
+          {romScores && confidence >= 0.65 && captureTimer === null && (
             <div className="space-y-3">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-xs font-semibold" style={{ color: "var(--color-hw-muted)" }}>Timer:</span>
-                {TIMER_OPTIONS.map((t) => (
-                  <button key={t} onClick={() => setTimerDuration(t)}
-                    className="w-10 h-10 rounded-full text-sm font-bold transition-all"
-                    style={timerDuration === t
-                      ? { background: "var(--color-hw-sidebar)", color: "#fff" }
-                      : { background: "var(--color-hw-cream)", color: "var(--color-hw-muted)", border: "1px solid var(--color-hw-border)" }}>
-                    {t}s
-                  </button>
-                ))}
+              <div className="flex gap-2">
+                <button onClick={() => startCaptureTimer(5)} disabled={!romScores || confidence < 0.65}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                  style={{ background: "var(--color-hw-green)" }}>
+                  5 Sec
+                </button>
+                <button onClick={() => startCaptureTimer(10)} disabled={!romScores || confidence < 0.65}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                  style={{ background: "var(--color-hw-green)" }}>
+                  10 Sec
+                </button>
               </div>
-              <button onClick={startCountdown} className="w-full py-3.5 rounded-xl font-bold text-white" style={{ background: "var(--color-hw-green)" }}>
-                📸 Capture in {timerDuration}s · +100 pts
-              </button>
+              <p className="text-xs text-center" style={{ color: "var(--color-hw-muted)" }}>Click timer to auto-capture · +100 pts</p>
             </div>
           )}
         </div>
@@ -296,6 +371,11 @@ export default function ScanPage() {
         <div className="space-y-4">
           <div>
             <h1 className="text-xl font-bold" style={{ color: "var(--color-hw-navy)" }}>Movement Insights</h1>
+            {selectedExercise && (
+              <p className="text-sm mt-1" style={{ color: "var(--color-hw-clay)" }}>
+                {RECOVERY_EXERCISES.find((e) => e.id === selectedExercise)?.label}
+              </p>
+            )}
             <p className="text-sm mt-0.5" style={{ color: "var(--color-hw-gold)" }}>+100 pts earned!</p>
           </div>
 
@@ -344,8 +424,8 @@ export default function ScanPage() {
             </div>
           )}
 
-          <button onClick={() => setPhase("consent")} className="w-full py-3 rounded-xl font-semibold" style={{ background: "var(--color-hw-cream)", color: "var(--color-hw-navy)", border: "1px solid var(--color-hw-border)" }}>
-            Scan Again
+          <button onClick={() => { setPhase("movement-select"); setRomScores(null); setDeltas(null); setConfidence(0); }} className="w-full py-3 rounded-xl font-semibold" style={{ background: "var(--color-hw-cream)", color: "var(--color-hw-navy)", border: "1px solid var(--color-hw-border)" }}>
+            Scan Another Movement
           </button>
         </div>
       )}

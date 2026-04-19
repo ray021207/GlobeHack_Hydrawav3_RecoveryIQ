@@ -95,11 +95,14 @@ function Step2Rom({
   const [confidence, setConfidence] = useState(0);
   const [liveRom, setLiveRom] = useState<RomScores | null>(null);
   const [status, setStatus] = useState("Stand 6–8 feet from camera, full body visible");
+  const [captureTimer, setCaptureTimer] = useState<number | null>(null);
+  const [timerMode, setTimerMode] = useState<"5" | "10" | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const plRef = useRef<unknown>(null);
   const animRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animRef.current);
@@ -111,6 +114,29 @@ function Step2Rom({
   }, []);
 
   useEffect(() => () => { cancelAnimationFrame(animRef.current); streamRef.current?.getTracks().forEach((t) => t.stop()); }, []);
+
+  // ROM Capture timer countdown effect - ONLY handles countdown
+  useEffect(() => {
+    if (captureTimer === null || captureTimer <= 0) return;
+
+    const timer = setInterval(() => {
+      setCaptureTimer((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [captureTimer]);
+
+  // Auto-capture when timer reaches zero
+  useEffect(() => {
+    if (captureTimer === 0) {
+      setCaptureTimer(null);
+      setTimerMode(null);
+      if (liveRom && confidence >= 0.65 && activeExercise) {
+        onCapture(activeExercise, liveRom);
+        stopCamera();
+      }
+    }
+  }, [captureTimer, liveRom, confidence, activeExercise, onCapture, stopCamera]);
 
   async function startCamera(exerciseId: string) {
     setActiveExercise(exerciseId);
@@ -181,14 +207,41 @@ function Step2Rom({
 
   function capture() {
     if (!liveRom || confidence < 0.65 || !activeExercise) return;
-    onCapture(activeExercise, liveRom);
-    stopCamera();
+    // Start timer instead of capturing immediately
+    setCaptureTimer(10); // Default to 10 seconds
+    setTimerMode("10");
   }
+
+  const handleStartCaptureTimer = (seconds: "5" | "10") => {
+    setCaptureTimer(parseInt(seconds));
+    setTimerMode(seconds);
+  };
 
   const capturedCount = Object.keys(capturedRom).length;
 
   return (
     <div className="space-y-4">
+      {/* Exercise Instructions — shown when camera is active */}
+      {camState !== "idle" && activeExercise && (
+        <div
+          className="rounded-2xl p-4 text-center border-l-4"
+          style={{
+            background: "linear-gradient(135deg, var(--color-hw-clay)10 0%, #d9770620 100%)",
+            borderColor: "var(--color-hw-clay)",
+          }}
+        >
+          <p className="text-xs uppercase tracking-widest font-semibold mb-1" style={{ color: "var(--color-hw-text-muted)" }}>
+            Movement to Perform
+          </p>
+          <p className="text-lg font-bold mb-2" style={{ color: "var(--color-hw-clay)" }}>
+            {ROM_EXERCISES.find((e) => e.id === activeExercise)?.label}
+          </p>
+          <p className="text-sm" style={{ color: "var(--color-hw-text)" }}>
+            {ROM_EXERCISES.find((e) => e.id === activeExercise)?.cue}
+          </p>
+        </div>
+      )}
+
       {/* Camera viewport — shown when active */}
       {camState !== "idle" && (
         <div className="rounded-2xl overflow-hidden space-y-3">
@@ -206,16 +259,36 @@ function Step2Rom({
             </div>
           </div>
           <p className="text-xs text-center font-semibold" style={{ color: "var(--color-hw-text-muted)" }}>{status}</p>
+          
+          {/* Timer Display */}
+          {captureTimer !== null && (
+            <div style={{ background: "linear-gradient(135deg, var(--color-hw-clay) 0%, #d97706 100%)", borderRadius: "16px", padding: "24px", textAlign: "center", color: "#fff" }}>
+              <p className="text-sm font-semibold mb-2">Capturing in</p>
+              <p style={{ fontSize: "72px", fontWeight: "bold", lineHeight: "1", marginBottom: "12px" }}>{captureTimer}</p>
+              <p className="text-sm">Hold pose still and stay in frame</p>
+            </div>
+          )}
+
+          {/* Capture Button / Timer Options */}
           <div className="flex gap-3">
             <button onClick={stopCamera} className="px-4 py-2.5 rounded-xl text-sm font-semibold"
               style={{ background: "#fff", color: "var(--color-hw-text)", border: "1px solid var(--color-hw-border)" }}>
               Cancel
             </button>
-            <button onClick={capture} disabled={!liveRom || confidence < 0.65}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
-              style={{ background: "var(--color-hw-green)" }}>
-              Capture Angles → +20 💎
-            </button>
+            {captureTimer === null ? (
+              <>
+                <button onClick={() => handleStartCaptureTimer("5")} disabled={!liveRom || confidence < 0.65}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                  style={{ background: "var(--color-hw-green)" }}>
+                  5 Sec
+                </button>
+                <button onClick={() => handleStartCaptureTimer("10")} disabled={!liveRom || confidence < 0.65}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-40"
+                  style={{ background: "var(--color-hw-green)" }}>
+                  10 Sec
+                </button>
+              </>
+            ) : null}
           </div>
         </div>
       )}
@@ -302,7 +375,6 @@ export default function PatientAssessment() {
   const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [report, setReport] = useState<KineticReport | null>(null);
-  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     const id = localStorage.getItem("riq_userId") as PatientId;
@@ -339,12 +411,39 @@ export default function PatientAssessment() {
     const gam = getGamification(userId);
     saveGamification(userId, { ...gam, gems: gam.gems + 150 + romBonus, points: gam.points + 150 + romBonus });
     
-    // Generate and save kinetic report
-    const kineticReport = generateKineticReport(data);
-    localStorage.setItem(`kinetic_report_${userId}`, JSON.stringify(kineticReport));
+    // Generate initial report
+    let kineticReport = generateKineticReport(data);
     
-    setReport(kineticReport);
-    setSubmitted(true);
+    // Enhance with Claude AI recommendations
+    (async () => {
+      try {
+        const claudeResponse = await fetch("/api/generate-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assessmentData: data }),
+        });
+        
+        if (claudeResponse.ok) {
+          const claudeData = await claudeResponse.json();
+          // Merge Claude's intelligent recommendations
+          kineticReport = {
+            ...kineticReport,
+            recommendations: claudeData.recommendations || kineticReport.recommendations,
+            insights: claudeData.insights || kineticReport.insights,
+            summary: {
+              ...kineticReport.summary,
+              executiveSummary: claudeData.executiveSummary || "Assessment completed",
+            },
+          };
+        }
+      } catch (error) {
+        console.log("Claude enhancement unavailable, using template recommendations");
+      }
+      
+      localStorage.setItem(`kinetic_report_${userId}`, JSON.stringify(kineticReport));
+      setReport(kineticReport);
+      setSubmitted(true);
+    })();
   }
 
   const activeArea = state.areas.find((a) => a.regionId === activeRegion);
@@ -378,17 +477,6 @@ export default function PatientAssessment() {
             View Leaderboard
           </button>
         </div>
-      </div>
-    );
-  }
-        </p>
-        <div className="rounded-2xl p-5 text-left space-y-2" style={{ background: "#fff", border: "1px solid var(--color-hw-border)" }}>
-          <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "var(--color-hw-text-muted)" }}>Your pet thanks you</p>
-          <p className="text-sm" style={{ color: "var(--color-hw-text)" }}>Keep checking in daily to earn more gems and keep your pet happy while you wait for your visit!</p>
-        </div>
-        <button onClick={() => router.push("/patient")} className="w-full py-3.5 rounded-xl font-bold text-white" style={{ background: "var(--color-hw-clay)" }}>
-          Back to Home
-        </button>
       </div>
     );
   }

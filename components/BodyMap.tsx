@@ -8,144 +8,157 @@ export type BodyRegion = {
   path: string;
 };
 
-// ── Front regions - Detailed medical body map ──────────────────────────────────
+// ── Front regions - Clean geometric body map ──────────────────────────────────
 // ViewBox: 0 0 200 360  |  figure centered at x=100
 const FRONT_REGIONS: BodyRegion[] = [
   // HEAD
-  { id: "head_front_l", label: "Head Left", side: "left", view: "front", path: "M85,8 L100,8 L100,28 L85,28 Z" },
-  { id: "head_front_r", label: "Head Right", side: "right", view: "front", path: "M100,8 L115,8 L115,28 L100,28 Z" },
-  { id: "forehead", label: "Forehead", view: "front", path: "M85,8 L115,8 L115,18 L85,18 Z" },
-  { id: "face", label: "Face", view: "front", path: "M85,18 L115,18 L115,36 L85,36 Z" },
+  { id: "head", label: "Head", view: "front", path: "M80,4 L120,4 L120,40 L80,40 Z" },
   
-  // NECK
-  { id: "neck_front", label: "Neck", view: "front", path: "M92,36 L108,36 L108,48 L92,48 Z" },
-  
-  // SHOULDERS & UPPER CHEST
-  { id: "shoulder_r", label: "Right Shoulder", side: "right", view: "front", path: "M60,48 L92,48 L92,62 L60,62 Z" },
-  { id: "shoulder_l", label: "Left Shoulder", side: "left", view: "front", path: "M108,48 L140,48 L140,62 L108,62 Z" },
-  { id: "upper_chest_c", label: "Upper Chest Center", view: "front", path: "M92,48 L108,48 L108,70 L92,70 Z" },
-  
-  // CHEST
-  { id: "chest_l", label: "Left Chest", side: "left", view: "front", path: "M75,62 L100,62 L100,95 L75,95 Z" },
-  { id: "chest_r", label: "Right Chest", side: "right", view: "front", path: "M100,62 L125,62 L125,95 L100,95 Z" },
-  { id: "chest_center", label: "Chest Center", view: "front", path: "M92,62 L108,62 L108,80 L92,80 Z" },
+  // NECK & SHOULDERS
+  { id: "neck", label: "Neck", view: "front", path: "M92,40 L108,40 L108,48 L92,48 Z" },
+  { id: "shoulder_l", label: "Left Shoulder", side: "left", view: "front", path: "M70,48 L92,48 L92,70 L70,70 Z" },
+  { id: "shoulder_r", label: "Right Shoulder", side: "right", view: "front", path: "M108,48 L130,48 L130,70 L108,70 Z" },
   
   // UPPER ARMS
-  { id: "upper_arm_l", label: "Left Upper Arm", side: "left", view: "front", path: "M48,62 L75,70 L75,115 L48,110 Z" },
-  { id: "upper_arm_r", label: "Right Upper Arm", side: "right", view: "front", path: "M125,70 L152,62 L152,110 L125,115 Z" },
+  { id: "upper_arm_l", label: "Left Upper Arm", side: "left", view: "front", path: "M50,70 L70,70 L70,135 L50,135 Z" },
+  { id: "upper_arm_r", label: "Right Upper Arm", side: "right", view: "front", path: "M130,70 L150,70 L150,135 L130,135 Z" },
+  
+  // CHEST
+  { id: "chest_l", label: "Left Chest", side: "left", view: "front", path: "M70,70 L100,70 L100,160 L70,160 Z" },
+  { id: "chest_r", label: "Right Chest", side: "right", view: "front", path: "M100,70 L130,70 L130,160 L100,160 Z" },
   
   // FOREARMS
-  { id: "forearm_l", label: "Left Forearm", side: "left", view: "front", path: "M36,115 L60,120 L58,155 L34,150 Z" },
-  { id: "forearm_r", label: "Right Forearm", side: "right", view: "front", path: "M140,120 L164,115 L166,150 L142,155 Z" },
-  
-  // HANDS
-  { id: "hand_l", label: "Left Hand", side: "left", view: "front", path: "M28,155 L58,160 L56,175 L26,170 Z" },
-  { id: "hand_r", label: "Right Hand", side: "right", view: "front", path: "M142,160 L172,155 L174,170 L144,175 Z" },
+  { id: "forearm_l", label: "Left Forearm", side: "left", view: "front", path: "M50,135 L70,135 L70,235 L50,235 Z" },
+  { id: "forearm_r", label: "Right Forearm", side: "right", view: "front", path: "M130,135 L150,135 L150,235 L130,235 Z" },
   
   // ABDOMEN
-  { id: "abdomen_l", label: "Left Abdomen", side: "left", view: "front", path: "M75,95 L100,95 L100,135 L75,135 Z" },
-  { id: "abdomen_r", label: "Right Abdomen", side: "right", view: "front", path: "M100,95 L125,95 L125,135 L100,135 Z" },
-  { id: "abdomen_lower_l", label: "Lower Abdomen Left", side: "left", view: "front", path: "M80,135 L100,135 L100,160 L80,160 Z" },
-  { id: "abdomen_lower_r", label: "Lower Abdomen Right", side: "right", view: "front", path: "M100,135 L120,135 L120,160 L100,160 Z" },
+  { id: "abdomen_l", label: "Left Abdomen", side: "left", view: "front", path: "M70,160 L100,160 L100,235 L70,235 Z" },
+  { id: "abdomen_r", label: "Right Abdomen", side: "right", view: "front", path: "M100,160 L130,160 L130,235 L100,235 Z" },
   
-  // HIPS & GROIN
-  { id: "groin_l", label: "Left Groin", side: "left", view: "front", path: "M78,160 L95,160 L95,175 L78,175 Z" },
-  { id: "groin_r", label: "Right Groin", side: "right", view: "front", path: "M105,160 L122,160 L122,175 L105,175 Z" },
+  // HANDS
+  { id: "hand_l", label: "Left Hand", side: "left", view: "front", path: "M50,235 L70,235 L70,260 L50,260 Z" },
+  { id: "hand_r", label: "Right Hand", side: "right", view: "front", path: "M130,235 L150,235 L150,260 L130,260 Z" },
   
   // THIGHS
-  { id: "thigh_l", label: "Left Thigh", side: "left", view: "front", path: "M70,175 L100,175 L100,235 L70,235 Z" },
-  { id: "thigh_r", label: "Right Thigh", side: "right", view: "front", path: "M100,175 L130,175 L130,235 L100,235 Z" },
+  { id: "thigh_l", label: "Left Thigh", side: "left", view: "front", path: "M75,235 L100,235 L100,260 L75,260 Z" },
+  { id: "thigh_r", label: "Right Thigh", side: "right", view: "front", path: "M100,235 L125,235 L125,260 L100,260 Z" },
   
-  // KNEES
-  { id: "knee_l", label: "Left Knee", side: "left", view: "front", path: "M75,235 L100,235 L100,255 L75,255 Z" },
-  { id: "knee_r", label: "Right Knee", side: "right", view: "front", path: "M100,235 L125,235 L125,255 L100,255 Z" },
-  
-  // LOWER LEGS / SHINS
-  { id: "shin_l", label: "Left Shin", side: "left", view: "front", path: "M72,255 L100,255 L100,310 L72,310 Z" },
-  { id: "shin_r", label: "Right Shin", side: "right", view: "front", path: "M100,255 L128,255 L128,310 L100,310 Z" },
+  // LOWER LEGS
+  { id: "shin_l", label: "Left Shin", side: "left", view: "front", path: "M60,260 L80,260 L80,330 L60,330 Z" },
+  { id: "shin_r", label: "Right Shin", side: "right", view: "front", path: "M120,260 L140,260 L140,330 L120,330 Z" },
   
   // FEET
-  { id: "foot_l", label: "Left Foot", side: "left", view: "front", path: "M58,310 L98,310 L98,330 L58,330 Z" },
-  { id: "foot_r", label: "Right Foot", side: "right", view: "front", path: "M102,310 L142,310 L142,330 L102,330 Z" },
+  { id: "foot_l", label: "Left Foot", side: "left", view: "front", path: "M60,330 L75,330 L75,340 L60,340 Z" },
+  { id: "foot_r", label: "Right Foot", side: "right", view: "front", path: "M125,330 L140,330 L140,340 L125,340 Z" },
 ];
 
-// ── Back regions - Detailed medical body map ──────────────────────────────────
+// ── Back regions - Clean geometric body map ──────────────────────────────────
 const BACK_REGIONS: BodyRegion[] = [
   // HEAD
-  { id: "head_back_l", label: "Head Left Back", side: "left", view: "back", path: "M85,8 L100,8 L100,28 L85,28 Z" },
-  { id: "head_back_r", label: "Head Right Back", side: "right", view: "back", path: "M100,8 L115,8 L115,28 L100,28 Z" },
-  { id: "back_of_head", label: "Back of Head", view: "back", path: "M85,18 L115,18 L115,32 L85,32 Z" },
+  { id: "head_back", label: "Head", view: "back", path: "M80,4 L120,4 L120,40 L80,40 Z" },
   
   // NECK
-  { id: "neck_back", label: "Neck Back", view: "back", path: "M92,36 L108,36 L108,48 L92,48 Z" },
+  { id: "neck_back", label: "Neck", view: "back", path: "M92,40 L108,40 L108,48 L92,48 Z" },
   
   // SHOULDERS
-  { id: "shoulder_back_r", label: "Right Shoulder Back", side: "right", view: "back", path: "M60,48 L92,48 L92,62 L60,62 Z" },
-  { id: "shoulder_back_l", label: "Left Shoulder Back", side: "left", view: "back", path: "M108,48 L140,48 L140,62 L108,62 Z" },
+  { id: "shoulder_back_l", label: "Left Shoulder", side: "left", view: "back", path: "M70,48 L92,48 L92,70 L70,70 Z" },
+  { id: "shoulder_back_r", label: "Right Shoulder", side: "right", view: "back", path: "M108,48 L130,48 L130,70 L108,70 Z" },
   
   // UPPER BACK
-  { id: "upper_back", label: "Upper Back", view: "back", path: "M92,48 L108,48 L108,75 L92,75 Z" },
-  { id: "trapezius_l", label: "Left Trapezius", side: "left", view: "back", path: "M75,62 L100,62 L100,85 L75,85 Z" },
-  { id: "trapezius_r", label: "Right Trapezius", side: "right", view: "back", path: "M100,62 L125,62 L125,85 L100,85 Z" },
+  { id: "upper_back", label: "Upper Back", view: "back", path: "M70,70 L130,70 L130,100 L70,100 Z" },
   
-  // REAR ARMS
-  { id: "rear_upper_arm_l", label: "Left Rear Upper Arm", side: "left", view: "back", path: "M48,62 L75,70 L75,115 L48,110 Z" },
-  { id: "rear_upper_arm_r", label: "Right Rear Upper Arm", side: "right", view: "back", path: "M125,70 L152,62 L152,110 L125,115 Z" },
-  
-  // REAR FOREARMS
-  { id: "rear_forearm_l", label: "Left Rear Forearm", side: "left", view: "back", path: "M36,115 L60,120 L58,155 L34,150 Z" },
-  { id: "rear_forearm_r", label: "Right Rear Forearm", side: "right", view: "back", path: "M140,120 L164,115 L166,150 L142,155 Z" },
-  
-  // REAR HANDS
-  { id: "rear_hand_l", label: "Left Rear Hand", side: "left", view: "back", path: "M28,155 L58,160 L56,175 L26,170 Z" },
-  { id: "rear_hand_r", label: "Right Rear Hand", side: "right", view: "back", path: "M142,160 L172,155 L174,170 L144,175 Z" },
+  // REAR UPPER ARMS
+  { id: "rear_upper_arm_l", label: "Left Upper Arm", side: "left", view: "back", path: "M50,70 L70,70 L70,135 L50,135 Z" },
+  { id: "rear_upper_arm_r", label: "Right Upper Arm", side: "right", view: "back", path: "M130,70 L150,70 L150,135 L130,135 Z" },
   
   // MID BACK
-  { id: "mid_back_l", label: "Left Mid Back", side: "left", view: "back", path: "M75,85 L100,85 L100,130 L75,130 Z" },
-  { id: "mid_back_r", label: "Right Mid Back", side: "right", view: "back", path: "M100,85 L125,85 L125,130 L100,130 Z" },
-  { id: "mid_back_c", label: "Mid Back Center", view: "back", path: "M92,75 L108,75 L108,95 L92,95 Z" },
+  { id: "mid_back", label: "Mid Back", view: "back", path: "M70,100 L130,100 L130,180 L70,180 Z" },
+  
+  // REAR FOREARMS
+  { id: "rear_forearm_l", label: "Left Forearm", side: "left", view: "back", path: "M50,135 L70,135 L70,235 L50,235 Z" },
+  { id: "rear_forearm_r", label: "Right Forearm", side: "right", view: "back", path: "M130,135 L150,135 L150,235 L130,235 Z" },
   
   // LOWER BACK
-  { id: "lower_back_l", label: "Left Lower Back", side: "left", view: "back", path: "M80,130 L100,130 L100,165 L80,165 Z" },
-  { id: "lower_back_r", label: "Right Lower Back", side: "right", view: "back", path: "M100,130 L120,130 L120,165 L100,165 Z" },
-  { id: "sacrum", label: "Sacrum", view: "back", path: "M92,160 L108,160 L108,175 L92,175 Z" },
+  { id: "lower_back_l", label: "Left Lower Back", side: "left", view: "back", path: "M70,180 L100,180 L100,235 L70,235 Z" },
+  { id: "lower_back_r", label: "Right Lower Back", side: "right", view: "back", path: "M100,180 L130,180 L130,235 L100,235 Z" },
   
-  // BUTTOCKS
-  { id: "glute_l", label: "Left Buttock", side: "left", view: "back", path: "M75,165 L100,165 L100,205 L75,205 Z" },
-  { id: "glute_r", label: "Right Buttock", side: "right", view: "back", path: "M100,165 L125,165 L125,205 L100,205 Z" },
+  // REAR HANDS
+  { id: "rear_hand_l", label: "Left Hand", side: "left", view: "back", path: "M50,235 L70,235 L70,260 L50,260 Z" },
+  { id: "rear_hand_r", label: "Right Hand", side: "right", view: "back", path: "M130,235 L150,235 L150,260 L130,260 Z" },
   
   // REAR THIGHS
-  { id: "rear_thigh_l", label: "Left Rear Thigh", side: "left", view: "back", path: "M70,205 L100,205 L100,235 L70,235 Z" },
-  { id: "rear_thigh_r", label: "Right Rear Thigh", side: "right", view: "back", path: "M100,205 L130,205 L130,235 L100,235 Z" },
+  { id: "rear_thigh_l", label: "Left Thigh", side: "left", view: "back", path: "M75,235 L100,235 L100,260 L75,260 Z" },
+  { id: "rear_thigh_r", label: "Right Thigh", side: "right", view: "back", path: "M100,235 L125,235 L125,260 L100,260 Z" },
   
-  // REAR KNEES
-  { id: "rear_knee_l", label: "Left Rear Knee", side: "left", view: "back", path: "M75,235 L100,235 L100,255 L75,255 Z" },
-  { id: "rear_knee_r", label: "Right Rear Knee", side: "right", view: "back", path: "M100,235 L125,235 L125,255 L100,255 Z" },
-  
-  // REAR LOWER LEGS / CALVES
-  { id: "calf_l", label: "Left Calf", side: "left", view: "back", path: "M72,255 L100,255 L100,310 L72,310 Z" },
-  { id: "calf_r", label: "Right Calf", side: "right", view: "back", path: "M100,255 L128,255 L128,310 L100,310 Z" },
+  // REAR CALVES / LOWER LEGS
+  { id: "calf_l", label: "Left Calf", side: "left", view: "back", path: "M60,260 L80,260 L80,330 L60,330 Z" },
+  { id: "calf_r", label: "Right Calf", side: "right", view: "back", path: "M120,260 L140,260 L140,330 L120,330 Z" },
   
   // REAR FEET
-  { id: "rear_foot_l", label: "Left Rear Foot", side: "left", view: "back", path: "M58,310 L98,310 L98,330 L58,330 Z" },
-  { id: "rear_foot_r", label: "Right Rear Foot", side: "right", view: "back", path: "M102,310 L142,310 L142,330 L102,330 Z" },
+  { id: "rear_foot_l", label: "Left Foot", side: "left", view: "back", path: "M60,330 L75,330 L75,340 L60,340 Z" },
+  { id: "rear_foot_r", label: "Right Foot", side: "right", view: "back", path: "M125,330 L140,330 L140,340 L125,340 Z" },
 ];
 
-// ── Silhouette outline paths (drawn as background fill) ──────────────────────
+// ── Silhouette outline paths (clean geometric style) ─────────────────────────
 const FRONT_SILHOUETTE = `
-  M100,2
-  C88,2 82,10 82,20 C82,30 88,38 94,40
-  L92,56 L52,56 C38,60 28,68 28,76
-  L32,118 L24,160 L18,176 L22,186 L46,186 L46,180
-  L74,180 L68,238 L64,262 L60,308 L52,324 L60,330 L92,330 L94,318 L100,316
-  L106,318 L108,330 L140,330 L148,324 L140,308 L136,262 L132,238 L126,180
-  L154,180 L154,186 L178,186 L182,176 L176,160 L168,118 L172,76
-  C172,68 162,60 148,56
-  L108,56 L106,40
-  C112,38 118,30 118,20 C118,10 112,2 100,2 Z
+  M100,4
+  C88,4 80,12 80,22 C80,32 88,40 100,40
+  C112,40 120,32 120,22 C120,12 112,4 100,4 Z
+  M70,48 L130,48
+  L130,70 L70,70 Z
+  M50,70 L70,70
+  L70,135 L50,135 Z
+  M130,70 L150,70
+  L150,135 L130,135 Z
+  M70,70 L130,70
+  L130,160 L70,160 Z
+  M65,160 L75,160
+  L75,235 L65,235 Z
+  M125,160 L135,160
+  L135,235 L125,235 Z
+  M75,160 L125,160
+  L125,235 L75,235 Z
+  M65,235 L75,235
+  L75,260 L65,260 Z
+  M125,235 L135,235
+  L135,260 L125,260 Z
+  M75,235 L125,235
+  L125,260 L75,260 Z
+  M60,260 L80,260
+  L80,330 L60,330 Z
+  M120,260 L140,260
+  L140,330 L120,330 Z
 `;
 
-const BACK_SILHOUETTE = FRONT_SILHOUETTE;
+const BACK_SILHOUETTE = `
+  M100,4
+  C88,4 80,12 80,22 C80,32 88,40 100,40
+  C112,40 120,32 120,22 C120,12 112,4 100,4 Z
+  M70,48 L130,48
+  L130,70 L70,70 Z
+  M50,70 L70,70
+  L70,135 L50,135 Z
+  M130,70 L150,70
+  L150,135 L130,135 Z
+  M70,70 L130,70
+  L130,180 L70,180 Z
+  M65,180 L75,180
+  L75,235 L65,235 Z
+  M125,180 L135,180
+  L135,235 L125,235 Z
+  M75,180 L125,180
+  L125,235 L75,235 Z
+  M65,235 L75,235
+  L75,260 L65,260 Z
+  M125,235 L135,235
+  L135,260 L125,260 Z
+  M75,235 L125,235
+  L125,260 L75,260 Z
+  M60,260 L80,260
+  L80,330 L60,330 Z
+  M120,260 L140,260
+  L140,330 L120,330 Z
+`;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 interface BodyMapProps {
@@ -193,72 +206,62 @@ function SilhouetteSVG({
           </filter>
         </defs>
 
-        {/* Full silhouette background */}
+        {/* Full silhouette background - Dark navy/teal */}
         <path
           d={view === "front" ? FRONT_SILHOUETTE : BACK_SILHOUETTE}
-          fill="#1c2a3a"
+          fill="#2c3e50"
           filter="url(#body-shadow)"
         />
 
-        {/* Head circle */}
-        <ellipse cx="100" cy="20" rx="18" ry="20" fill="#1c2a3a" />
-
         {/* Segment divider lines - Clean white segments */}
         {[
-          // Head divisions
-          "M100,8 L100,32",
-          "M85,18 L115,18",
+          // Head outline
+          "M80,4 L120,4",
+          "M80,40 L120,40",
+          "M80,4 L80,40",
+          "M120,4 L120,40",
           
           // Neck
-          "M92,36 L108,36",
           "M92,48 L108,48",
           
-          // Shoulder lines
-          "M60,56 L140,56",
-          "M75,62 L125,62",
-          "M92,62 L108,62",
+          // Shoulder/neck lines
+          "M70,48 L130,48",
+          "M70,70 L130,70",
+          "M92,48 L92,70",
+          "M108,48 L108,70",
           
-          // Upper arm/chest
-          "M48,70 L60,70",
-          "M152,70 L140,70",
-          "M100,48 L100,70",
+          // Arm lines
+          "M50,70 L70,70",
+          "M130,70 L150,70",
+          "M50,135 L70,135",
+          "M130,135 L150,135",
+          "M50,235 L70,235",
+          "M130,235 L150,235",
           
-          // Chest divisions
-          "M75,62 L75,95",
-          "M125,62 L125,95",
-          "M92,70 L92,95",
-          "M108,70 L108,95",
+          // Torso vertical lines
+          "M70,70 L70,235",
+          "M130,70 L130,235",
+          "M100,70 L100,235",
           
-          // Upper arm
-          "M48,110 L60,115",
-          "M152,110 L140,115",
+          // Abdomen/lower torso divisions
+          "M70,160 L130,160",
           
-          // Forearm/hand divisions
-          "M36,155 L60,160",
-          "M164,155 L140,160",
-          "M28,170 L58,175",
-          "M172,170 L142,175",
-          
-          // Abdomen/torso divisions
-          "M75,95 L125,95",
-          "M75,135 L125,135",
-          "M80,160 L120,160",
-          "M100,95 L100,175",
-          
-          // Thigh divisions
-          "M70,175 L130,175",
+          // Thigh lines
           "M75,235 L125,235",
-          "M100,175 L100,235",
+          "M75,260 L125,260",
+          "M100,235 L100,260",
           
-          // Knee/shin divisions
-          "M70,255 L130,255",
-          "M72,310 L128,310",
-          
-          // Foot divisions
-          "M58,330 L100,330",
-          "M100,330 L142,330",
+          // Leg lines
+          "M60,260 L80,260",
+          "M120,260 L140,260",
+          "M60,330 L80,330",
+          "M120,330 L140,330",
+          "M60,260 L60,330",
+          "M80,260 L80,330",
+          "M120,260 L120,330",
+          "M140,260 L140,330",
         ].map((d, i) => (
-          <path key={i} d={d} stroke="#d4d4d4" strokeWidth="2.2" fill="none" opacity="0.9" />
+          <path key={i} d={d} stroke="#f5f5f5" strokeWidth="2" fill="none" opacity="0.95" />
         ))}
 
         {/* Clickable region overlays */}
