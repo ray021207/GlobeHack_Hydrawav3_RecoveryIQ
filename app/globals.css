@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Fonts — matches hydrawav3.studio exactly */
+  --font-sans:    var(--font-manrope);
+  --font-body:    var(--font-inter);
+  --font-display: var(--font-manrope);
+  --font-mono:    var(--font-geist-mono);
+
+  /* Brand tokens — extracted from hydrawav3.studio CSS */
+  --color-hw-cream:     #f9f5f1;   /* main content bg */
+  --color-hw-cream-dk:  #f1ebe3;   /* cream shade for stripes/hover */
+  --color-hw-black:     #0f1115;   /* sidebar + deep surfaces */
+  --color-hw-teal:      #233d47;   /* secondary dark */
+  --color-hw-card:      #ffffff;
+  --color-hw-border:    #e0e0e0;
+  --color-hw-border-dk: rgba(255,255,255,0.10);
+
+  --color-hw-text:        #1a1a1a;
+  --color-hw-text-muted:  #575757;
+  --color-hw-text-faint:  #8a8a8a;
+
+  /* Accents */
+  --color-hw-clay:      #d17d5d;   /* tan — active nav, warm highlight */
+  --color-hw-clay-dk:   #b8684a;
+  --color-hw-orange:    #ec7c13;   /* secondary warm accent */
+  --color-hw-blue:      #135bec;   /* primary CTA blue */
+  --color-hw-blue-dk:   #1447e6;
+
+  /* Status */
+  --color-hw-green:     #00bb7f;
+  --color-hw-amber:     #fcbb00;
+  --color-hw-red:       #e40014;
+  --color-hw-purple:    #ac4bff;
+  --color-hw-rose:      #ff2357;
+
+  /* Back-compat aliases (older components reference these) */
+  --color-hw-sidebar: var(--color-hw-black);
+  --color-hw-navy:    var(--color-hw-text);
+  --color-hw-muted:   var(--color-hw-text-muted);
+  --color-hw-gold:    var(--color-hw-clay);
+  --color-hw-gold-lt: var(--color-hw-orange);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-body), var(--font-sans), system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-hw-cream);
+  color: var(--color-hw-text);
+  font-family: var(--font-body), var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
 }
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d0cb; border-radius: 3px; }
