@@ -6,6 +6,9 @@ import { extractRom, computeSymmetry, computeCompensation, avgLandmarkConfidence
 
 type Phase = "consent" | "scanning" | "complete";
 
+const TIMER_OPTIONS = [3, 5, 10] as const;
+type TimerOption = (typeof TIMER_OPTIONS)[number];
+
 export default function ScanPage() {
   const [userId, setUserId] = useState<PatientId>("maria");
   const [phase, setPhase] = useState<Phase>("consent");
@@ -15,6 +18,9 @@ export default function ScanPage() {
   const [deltas, setDeltas] = useState<Partial<Record<keyof RomScores, number>> | null>(null);
   const [newBadges, setNewBadges] = useState<string[]>([]);
   const [landmarks, setLandmarks] = useState<Landmark[] | null>(null);
+  const [timerDuration, setTimerDuration] = useState<TimerOption>(5);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -126,6 +132,30 @@ export default function ScanPage() {
     initCamera();
   }
 
+  function startCountdown() {
+    if (!romScores || confidence < 0.65) {
+      setStatus("Position not clear — ensure full body is visible");
+      return;
+    }
+    setCountdown(timerDuration);
+    let remaining = timerDuration;
+    countdownRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(countdownRef.current!);
+        setCountdown(null);
+        captureResults();
+      } else {
+        setCountdown(remaining);
+      }
+    }, 1000);
+  }
+
+  function cancelCountdown() {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setCountdown(null);
+  }
+
   function captureResults() {
     if (!romScores || confidence < 0.65) {
       setStatus("Position not clear — ensure full body is visible");
@@ -194,9 +224,35 @@ export default function ScanPage() {
       {phase === "scanning" && (
         <div className="space-y-4">
           <h1 className="text-xl font-bold" style={{ color: "var(--color-hw-navy)" }}>Movement Scan</h1>
+
           <div className="relative rounded-2xl overflow-hidden" style={{ background: "#000", aspectRatio: "4/3" }}>
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted autoPlay />
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+            {/* Countdown overlay */}
+            {countdown !== null && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center"
+                style={{ background: "rgba(0,0,0,0.55)" }}>
+                <div
+                  className="w-28 h-28 rounded-full flex items-center justify-center font-bold font-display"
+                  style={{
+                    fontSize: "4rem",
+                    color: "#fff",
+                    background: "rgba(255,255,255,0.15)",
+                    border: "4px solid rgba(255,255,255,0.6)",
+                    boxShadow: "0 0 40px rgba(255,255,255,0.2)",
+                    lineHeight: 1,
+                  }}>
+                  {countdown}
+                </div>
+                <p className="mt-4 text-sm font-semibold text-white opacity-80">Hold still…</p>
+                <button onClick={cancelCountdown}
+                  className="mt-4 px-4 py-1.5 rounded-full text-xs font-semibold"
+                  style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+                  Cancel
+                </button>
+              </div>
+            )}
 
             <div className="absolute bottom-3 left-3 right-3">
               <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.95)" }}>
@@ -210,11 +266,28 @@ export default function ScanPage() {
               </div>
             </div>
           </div>
+
           <p className="text-sm text-center" style={{ color: "var(--color-hw-muted)" }}>{status}</p>
-          {romScores && confidence >= 0.65 && (
-            <button onClick={captureResults} className="w-full py-3.5 rounded-xl font-bold text-white" style={{ background: "var(--color-hw-green)" }}>
-              Save Movement Insights · +100 pts
-            </button>
+
+          {/* Timer selector + capture button */}
+          {romScores && confidence >= 0.65 && countdown === null && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xs font-semibold" style={{ color: "var(--color-hw-muted)" }}>Timer:</span>
+                {TIMER_OPTIONS.map((t) => (
+                  <button key={t} onClick={() => setTimerDuration(t)}
+                    className="w-10 h-10 rounded-full text-sm font-bold transition-all"
+                    style={timerDuration === t
+                      ? { background: "var(--color-hw-sidebar)", color: "#fff" }
+                      : { background: "var(--color-hw-cream)", color: "var(--color-hw-muted)", border: "1px solid var(--color-hw-border)" }}>
+                    {t}s
+                  </button>
+                ))}
+              </div>
+              <button onClick={startCountdown} className="w-full py-3.5 rounded-xl font-bold text-white" style={{ background: "var(--color-hw-green)" }}>
+                📸 Capture in {timerDuration}s · +100 pts
+              </button>
+            </div>
           )}
         </div>
       )}
